@@ -25,6 +25,8 @@ Commands:
   keygen --id <id>      Make a signing key pair in keys/
   pack-recof ...        Pack, sign and check a ReCoF release (docs/releases.md)
   pack-launcher ...     Pack, sign and check a launcher release
+  pack-installer --exe <path> --version <v> [--out dist] [--makensis <path>]
+                        Build the NSIS installer for the launcher
   hash-table --from <dir>
                         Hash the in scope files of a real install
   smoke --dest <dir> [--channel beta|stable] [--keep]
@@ -44,6 +46,7 @@ fn main() -> ExitCode {
         "keygen" => release::keygen(&args, &repo_root()),
         "pack-recof" => release::pack_recof(&args, &repo_root()),
         "pack-launcher" => release::pack_launcher(&args, &repo_root()),
+        "pack-installer" => release::pack_installer(&args, &repo_root()),
         "hash-table" => release::hash_table(&args, &repo_root()),
         "smoke" => smoke::run(&args),
         "help" | "-h" | "--help" => {

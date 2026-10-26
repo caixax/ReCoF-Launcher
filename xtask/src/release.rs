@@ -188,6 +188,100 @@ pub fn pack_launcher(args: &[String], root: &Path) -> Result<(), String> {
     outcome
 }
 
+/// Builds the NSIS installer for the launcher.
+///
+/// The script is `installer/recof-launcher.nsi`; this finds `makensis` and
+/// hands it the version and the paths. The installer is not what the
+/// launcher updates itself from, which is the signed zip, so it carries no
+/// manifest: its SHA-256 is printed for the release notes instead.
+pub fn pack_installer(args: &[String], root: &Path) -> Result<(), String> {
+    let exe = root.join(require(args, "--exe")?);
+    if !exe.is_file() {
+        return Err(format!("{} is not a file", exe.display()));
+    }
+    let version = parse_version(&require(args, "--version")?)?;
+    let out = root.join(value_of(args, "--out").unwrap_or_else(|| "dist".to_owned()));
+    std::fs::create_dir_all(&out).map_err(|error| format!("{}: {error}", out.display()))?;
+    let makensis = find_makensis(value_of(args, "--makensis"))?;
+
+    let installer = out.join(installer_name(&version));
+    let script = root.join("installer").join("recof-launcher.nsi");
+    let absolute = |path: &Path| {
+        std::path::absolute(path)
+            .unwrap_or_else(|_| path.to_path_buf())
+            .display()
+            .to_string()
+    };
+
+    let output = std::process::Command::new(&makensis)
+        .arg("/V2")
+        .arg("/INPUTCHARSET")
+        .arg("UTF8")
+        .arg(format!("/DVERSION={version}"))
+        .arg(format!("/DVERSION_NUMERIC={}", numeric_version(&version)))
+        .arg(format!("/DEXE={}", absolute(&exe)))
+        .arg(format!("/DLICENSE={}", absolute(&root.join("LICENSE"))))
+        .arg(format!("/DOUTFILE={}", absolute(&installer)))
+        .arg(&script)
+        .output()
+        .map_err(|error| format!("{}: {error}", makensis.display()))?;
+    if !output.status.success() {
+        return Err(format!(
+            "makensis failed:\n{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        ));
+    }
+
+    let bytes =
+        std::fs::read(&installer).map_err(|error| format!("{}: {error}", installer.display()))?;
+    println!("{}", installer.display());
+    println!();
+    println!("version:  {version}");
+    println!("size:     {} bytes", bytes.len());
+    println!("sha256:   {}", sha256_bytes(&bytes));
+    Ok(())
+}
+
+/// What the installer of a version is called.
+pub fn installer_name(version: &Version) -> String {
+    format!("ReCoF-Launcher-{version}-setup.exe")
+}
+
+/// Windows version resources take four numbers and nothing else, so a
+/// prerelease such as `1.1.0-beta.1` is stamped `1.1.0.0`.
+fn numeric_version(version: &Version) -> String {
+    format!("{}.{}.{}.0", version.major, version.minor, version.patch)
+}
+
+/// `makensis`: the one asked for, then the one on the path, then where
+/// the NSIS installer puts it.
+fn find_makensis(asked: Option<String>) -> Result<std::path::PathBuf, String> {
+    if let Some(path) = asked.or_else(|| std::env::var("MAKENSIS").ok()) {
+        return Ok(std::path::PathBuf::from(path));
+    }
+    let on_path = std::process::Command::new("makensis")
+        .arg("/VERSION")
+        .output()
+        .is_ok_and(|output| output.status.success());
+    if on_path {
+        return Ok(std::path::PathBuf::from("makensis"));
+    }
+    for variable in ["ProgramFiles(x86)", "ProgramFiles"] {
+        if let Some(base) = std::env::var_os(variable) {
+            let candidate = Path::new(&base).join("NSIS").join("makensis.exe");
+            if candidate.is_file() {
+                return Ok(candidate);
+            }
+        }
+    }
+    Err(
+        "makensis was not found. Install NSIS (winget install NSIS.NSIS), or pass \
+         --makensis or set MAKENSIS to its path."
+            .to_owned(),
+    )
+}
+
 /// A file about to be packed.
 struct Entry {
     relative: String,
@@ -559,6 +653,20 @@ mod tests {
     fn an_unknown_channel_is_refused() {
         let args = vec!["--channel".to_owned(), "nightly".to_owned()];
         assert!(parse_channel(&args).is_err());
+    }
+
+    #[test]
+    fn the_installer_is_named_and_stamped_from_the_version() {
+        let release = Version::parse("1.0.0").unwrap();
+        assert_eq!(installer_name(&release), "ReCoF-Launcher-1.0.0-setup.exe");
+        assert_eq!(numeric_version(&release), "1.0.0.0");
+
+        let beta = Version::parse("1.1.0-beta.1").unwrap();
+        assert_eq!(
+            installer_name(&beta),
+            "ReCoF-Launcher-1.1.0-beta.1-setup.exe"
+        );
+        assert_eq!(numeric_version(&beta), "1.1.0.0");
     }
 
     #[test]

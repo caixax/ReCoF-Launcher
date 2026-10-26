@@ -106,15 +106,33 @@ git tag v0.2.0
 git push origin v0.2.0
 ```
 
-`.github/workflows/release.yml` builds, tests, packs, signs with the repository secret and publishes. To do it by hand:
+`.github/workflows/release.yml` builds, tests, packs, signs with the repository secret, builds the installer and publishes five files:
+
+| File | For |
+|---|---|
+| `ReCoF-Launcher-<version>-setup.exe` | Players who want it installed: per user, no administrator rights, Start menu entry, listed in installed apps |
+| `ReCoF-Launcher.exe` | Players who want it portable |
+| `recof-launcher-<version>.zip`, `recof-launcher-manifest.json`, `.sig` | The launcher itself, when it updates: the signed zip it downloads and checks |
+
+The installer goes to `%LOCALAPPDATA%\Programs` precisely so that the self update, which swaps the running executable for the verified one from the zip, works there without elevation. Its uninstall entry has no version on purpose: after the first self update it would be wrong.
+
+The version in `Cargo.toml` has to match the tag. A tag with a prerelease part, such as `v1.1.0-beta.1`, is signed for the beta channel and published as a prerelease; any other tag is stable.
+
+To do it by hand (the installer needs NSIS: `winget install NSIS.NSIS`):
 
 ```sh
 cargo build --release --target x86_64-pc-windows-msvc
 cargo xtask pack-launcher \
     --exe target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe \
-    --version 0.2.0 \
+    --version 1.0.0 \
+    --out dist
+cargo xtask pack-installer \
+    --exe target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe \
+    --version 1.0.0 \
     --out dist
 ```
+
+The installer script is [`installer/recof-launcher.nsi`](../installer/recof-launcher.nsi). It speaks the launcher's eleven languages; its own few sentences are first drafts outside English and Spanish, like the launcher's.
 
 ## Testing a release before publishing it
 
@@ -128,7 +146,7 @@ Once a release is published, run the whole path against it with the real game on
 cargo xtask smoke --dest "D:/recof-smoke/Cry of Fear ReCoF"
 ```
 
-It finds the game, asks GitHub for the newest release on the beta channel (`--channel stable` for the other one), reads its notes, downloads and verifies it, copies the game and applies the release, verifies the copy, damages two files and repairs them, builds the command line with every option set, and uninstalls. It lists and hashes the Steam install before and after, and fails if anything in it changed. `--keep` leaves the copy in place to play. It is the launcher's own code without the window, so a failure here is a failure a player would hit.
+It finds the game, asks GitHub for the newest release on the beta channel (`--channel stable` for the other one), reads its notes, fetches and verifies the launcher's own newest release down to the executable a self update would swap in, downloads and verifies the ReCoF release, copies the game and applies the release, verifies the copy, damages two files and repairs them, builds the command line with every option set, and uninstalls. It lists and hashes the Steam install before and after, and fails if anything in it changed. `--keep` leaves the copy in place to play. It is the launcher's own code without the window, so a failure here is a failure a player would hit.
 
 ## Checking a real install
 
@@ -149,6 +167,7 @@ It prints each in scope file with its size and SHA-256 and says whether it still
 - [ ] `cargo xtask check-dashes` is clean.
 - [ ] The release notes say what changed, in plain language.
 - [ ] `--min-launcher` is right.
-- [ ] All three files are attached to the GitHub release.
+- [ ] All three files are attached to the GitHub release (five for a launcher release).
+- [ ] For a launcher release, the installer installs and uninstalls cleanly: `ReCoF-Launcher-<version>-setup.exe /S`, then `Uninstall.exe /S`.
 - [ ] `cargo xtask smoke --dest <folder>` passes against the published release.
 - [ ] The launcher on a clean machine finds the update, shows the changelog, and installs it.

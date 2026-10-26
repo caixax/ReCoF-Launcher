@@ -38,6 +38,15 @@ This is a standalone MIT licensed project. It is not a replacement for `CoFLaunc
 
 No Visual C++ redistributable and no .NET runtime are needed: the launcher is a single executable of about 7 MB, built against the static CRT. See [docs/binary-size.md](docs/binary-size.md) for what that is made of and what was measured to get there.
 
+## Installing
+
+Every [release](https://github.com/caixax/ReCoF-Launcher/releases) has the same launcher in two forms:
+
+- **`ReCoF-Launcher-<version>-setup.exe`** installs it for your Windows user in `%LOCALAPPDATA%\Programs\ReCoF Launcher`, with a Start menu entry, an optional desktop shortcut, and an entry in the list of installed apps. It needs no administrator rights, which is also what lets the launcher update itself in that folder.
+- **`ReCoF-Launcher.exe`** is the portable launcher: one file, nothing to install. Put it in any folder you can write to.
+
+Both keep their settings, save backups and downloaded releases in `%LOCALAPPDATA%\ReCoF Launcher`, and both update themselves from GitHub Releases. Uninstalling the launcher leaves a ReCoF copy where it is, so remove that first from Maintenance, Uninstall if you want it gone too. The uninstaller removes the launcher's settings and downloads only when asked, and never the save backups.
+
 ## Building
 
 ```sh

@@ -3,7 +3,9 @@
 //!
 //! It runs the code the launcher runs, in the order the launcher runs it:
 //! find the game, ask GitHub for the newest release on a channel, read its
-//! notes, download and verify it into a version store, copy the game and
+//! notes, fetch and verify the launcher's own newest release down to the
+//! executable a self update would swap in, download and verify the ReCoF
+//! release into a version store, copy the game and
 //! apply the release, verify the copy, damage two files and repair them,
 //! build the command line, and uninstall. The Steam install is listed and
 //! hashed before and after, and the run fails if anything in it changed.
@@ -112,6 +114,7 @@ pub fn run(args: &[String]) -> Result<(), String> {
         ),
     );
     describe_notes(&available.changelog);
+    check_launcher_release(&client, channel, &paths, &store, &running, &cancel)?;
 
     // Download and verify, into the store.
     let fetched = update::fetch(
@@ -321,6 +324,67 @@ pub fn run(args: &[String]) -> Result<(), String> {
 
     println!();
     println!("smoke: everything passed");
+    Ok(())
+}
+
+/// The launcher's own release, down to the executable a self update would
+/// swap in. Nothing is swapped: this checks what a player would download.
+fn check_launcher_release(
+    client: &GithubClient,
+    channel: Channel,
+    paths: &AppPaths,
+    store: &VersionStore,
+    running: &Version,
+    cancel: &Arc<AtomicBool>,
+) -> Result<(), String> {
+    let Some(available) = update::check(
+        client,
+        consts::LAUNCHER_REPO,
+        Product::RecofLauncher,
+        channel,
+        None,
+    )
+    .map_err(|error| error.to_string())?
+    else {
+        step("launcher release", "none published on this channel");
+        return Ok(());
+    };
+
+    let fetched = update::fetch(
+        &available.release,
+        Product::RecofLauncher,
+        &paths.downloads_dir(),
+        cancel,
+        &mut |_| {},
+    )
+    .map_err(|error| format!("launcher fetch: {error}"))?
+    .ok_or("the launcher download was cancelled")?;
+    let stored = update::verify_and_store(
+        &fetched,
+        Product::RecofLauncher,
+        running,
+        None,
+        store,
+        &mut |_| {},
+    )
+    .map_err(|error| format!("launcher verify: {error}"))?;
+    let pending =
+        update::selfupdate::pending(&stored).map_err(|error| format!("launcher: {error}"))?;
+    if !pending.executable.is_file() {
+        return Err(format!("{} is missing", pending.executable.display()));
+    }
+    step(
+        "launcher release",
+        format!(
+            "{} signed and verified, {} ready to swap in",
+            available.release.tag_name,
+            pending
+                .executable
+                .file_name()
+                .map(|name| name.to_string_lossy().into_owned())
+                .unwrap_or_default()
+        ),
+    );
     Ok(())
 }
 

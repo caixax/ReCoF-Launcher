@@ -46,6 +46,13 @@ jobs:
           $version = $tag.TrimStart("v")
           "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
 
+          # A version with a prerelease part (1.1.0-beta.1) is a beta: its
+          # manifest says so and the GitHub release is marked as one, which
+          # keeps it off the stable channel.
+          $beta = $version.Contains("-")
+          "channel=$(if ($beta) { 'beta' } else { 'stable' })" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          "prerelease=$($beta.ToString().ToLower())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
           # The tag and Cargo.toml must agree, or the launcher would
           # report a version that is not the one that was released.
           $cargo = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"' |
@@ -65,7 +72,23 @@ jobs:
           pack-launcher
           --exe target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe
           --version ${{ steps.version.outputs.version }}
-          --channel stable
+          --channel ${{ steps.version.outputs.channel }}
+          --out dist
+
+      # The runner images ship NSIS; installing it is only the fallback.
+      - name: NSIS
+        shell: pwsh
+        run: |
+          $found = (Get-Command makensis -ErrorAction SilentlyContinue) -or
+                   (Test-Path "${env:ProgramFiles(x86)}\NSIS\makensis.exe")
+          if (-not $found) { choco install nsis -y --no-progress }
+
+      - name: Installer
+        run: >
+          cargo run --package xtask --
+          pack-installer
+          --exe target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe
+          --version ${{ steps.version.outputs.version }}
           --out dist
 
       - name: Report binary size
@@ -79,9 +102,20 @@ jobs:
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ steps.version.outputs.prerelease }}
           files: |
+            dist/ReCoF-Launcher-${{ steps.version.outputs.version }}-setup.exe
+            target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe
             dist/recof-launcher-${{ steps.version.outputs.version }}.zip
             dist/recof-launcher-manifest.json
             dist/recof-launcher-manifest.json.sig
-            target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe
+          body: |
+            ## Downloads
+
+            - **`ReCoF-Launcher-${{ steps.version.outputs.version }}-setup.exe`**: the installer. It installs for your Windows user only, needs no administrator rights, adds a Start menu entry, and can be removed from the list of installed apps.
+            - **`ReCoF-Launcher.exe`**: the portable launcher. One file, nothing to install: put it in any folder you can write to and run it.
+
+            Either one updates itself from here. `recof-launcher-${{ steps.version.outputs.version }}.zip`, `recof-launcher-manifest.json` and `recof-launcher-manifest.json.sig` are what the launcher downloads and checks when it does, so you do not need them.
+
+            The executables are not code signed yet, so Windows SmartScreen may warn the first time: "More info", then "Run anyway".
           generate_release_notes: true
