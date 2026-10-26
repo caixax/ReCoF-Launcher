@@ -21,3 +21,11 @@ pub fn desktop_dir() -> Result<PathBuf> {
 pub fn start_menu_programs_dir() -> Result<PathBuf> {
     Ok(local_app_data()?.join("applications"))
 }
+
+/// Directories an install must never be placed in.
+pub fn protected_dirs() -> Vec<PathBuf> {
+    ["/usr", "/bin", "/sbin", "/etc", "/boot"]
+        .iter()
+        .map(PathBuf::from)
+        .collect()
+}

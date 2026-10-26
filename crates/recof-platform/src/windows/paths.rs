@@ -8,8 +8,8 @@ use std::path::PathBuf;
 use windows::core::GUID;
 use windows::Win32::Foundation::S_OK;
 use windows::Win32::UI::Shell::{
-    FOLDERID_Desktop, FOLDERID_LocalAppData, FOLDERID_Programs, SHGetKnownFolderPath,
-    KF_FLAG_DEFAULT,
+    FOLDERID_Desktop, FOLDERID_LocalAppData, FOLDERID_ProgramFiles, FOLDERID_ProgramFilesX86,
+    FOLDERID_Programs, FOLDERID_Windows, SHGetKnownFolderPath, KF_FLAG_DEFAULT,
 };
 
 use crate::{PlatformError, Result};
@@ -28,6 +28,21 @@ pub fn desktop_dir() -> Result<PathBuf> {
 /// The user's start menu programs folder, for the optional shortcut.
 pub fn start_menu_programs_dir() -> Result<PathBuf> {
     known_folder(&FOLDERID_Programs, "FOLDERID_Programs")
+}
+
+/// Folders an install must never be placed in.
+///
+/// Program Files needs elevation to write and is where antivirus looks
+/// hardest; the Windows folder needs no explanation.
+pub fn protected_dirs() -> Vec<PathBuf> {
+    [
+        (&FOLDERID_ProgramFiles, "FOLDERID_ProgramFiles"),
+        (&FOLDERID_ProgramFilesX86, "FOLDERID_ProgramFilesX86"),
+        (&FOLDERID_Windows, "FOLDERID_Windows"),
+    ]
+    .into_iter()
+    .filter_map(|(id, name)| known_folder(id, name).ok())
+    .collect()
 }
 
 fn known_folder(id: &GUID, name: &'static str) -> Result<PathBuf> {

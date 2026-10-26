@@ -8,6 +8,7 @@ pub mod consts;
 pub mod error;
 pub mod fsutil;
 pub mod hashes;
+pub mod install;
 pub mod journal;
 pub mod kv;
 pub mod manifest;

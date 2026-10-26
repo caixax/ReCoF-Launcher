@@ -11,7 +11,7 @@ mod paths;
 mod registry;
 
 pub use disk::{cluster_size, disk_space, volume_root};
-pub use paths::{desktop_dir, local_app_data, start_menu_programs_dir};
+pub use paths::{desktop_dir, local_app_data, protected_dirs, start_menu_programs_dir};
 pub use registry::{read_string, read_u32, RegRoot};
 
 pub const PLATFORM_NAME: &str = "linux";

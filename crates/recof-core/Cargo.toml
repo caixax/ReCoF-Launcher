@@ -24,3 +24,9 @@ toml.workspace = true
 ureq.workspace = true
 walkdir.workspace = true
 zip.workspace = true
+
+[dev-dependencies]
+ed25519-dalek = { workspace = true, features = ["rand_core"] }
+serde_json.workspace = true
+walkdir.workspace = true
+zip.workspace = true
