@@ -6,5 +6,9 @@
 
 pub mod consts;
 pub mod error;
+pub mod hashes;
+pub mod kv;
+pub mod space;
+pub mod steam;
 
 pub use error::{Error, Result};

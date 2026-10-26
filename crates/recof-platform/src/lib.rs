@@ -9,8 +9,10 @@
 //! returns [`PlatformError::Unsupported`] where there is nothing to do yet.
 
 mod error;
+mod types;
 
 pub use error::PlatformError;
+pub use types::DiskSpace;
 
 pub type Result<T> = std::result::Result<T, PlatformError>;
 

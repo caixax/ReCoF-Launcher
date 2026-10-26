@@ -29,6 +29,12 @@ pub enum Error {
 
     #[error("{0}")]
     Platform(#[from] recof_platform::PlatformError),
+
+    #[error("{0} holds no cof.exe")]
+    NoGameExe(PathBuf),
+
+    #[error("{0} holds no cryoffear directory")]
+    NoGameDir(PathBuf),
 }
 
 impl Error {
@@ -46,6 +52,8 @@ impl Error {
             Error::Io { .. } | Error::PlainIo(_) => "err-io",
             Error::NotSupported(_) => "err-not-supported",
             Error::Platform(inner) => inner.message_id(),
+            Error::NoGameExe(_) => "err-no-game-exe",
+            Error::NoGameDir(_) => "err-no-game-dir",
         }
     }
 
@@ -56,6 +64,9 @@ impl Error {
             Error::PlainIo(_) => Vec::new(),
             Error::NotSupported(_) => Vec::new(),
             Error::Platform(inner) => inner.message_args(),
+            Error::NoGameExe(path) | Error::NoGameDir(path) => {
+                vec![("path", path.display().to_string())]
+            }
         }
     }
 }

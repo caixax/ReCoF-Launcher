@@ -9,4 +9,7 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+recof-core.workspace = true
+recof-platform.workspace = true
+
 walkdir.workspace = true
