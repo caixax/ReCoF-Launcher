@@ -10,6 +10,7 @@ use std::process::ExitCode;
 
 mod dashes;
 mod detect;
+mod release;
 
 const USAGE: &str = "\
 ReCoF Launcher release tooling
@@ -29,6 +30,10 @@ fn main() -> ExitCode {
     let result = match command {
         "check-dashes" => dashes::run(repo_root()),
         "detect" => detect::run(args.iter().any(|flag| flag == "--measure")),
+        "keygen" => release::keygen(&args, &repo_root()),
+        "pack-recof" => release::pack_recof(&args, &repo_root()),
+        "pack-launcher" => release::pack_launcher(&args, &repo_root()),
+        "hash-table" => release::hash_table(&args, &repo_root()),
         "help" | "-h" | "--help" => {
             print!("{USAGE}");
             Ok(())

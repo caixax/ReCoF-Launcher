@@ -38,8 +38,25 @@ jobs:
       - name: Release build
         run: cargo build --release --target x86_64-pc-windows-msvc
 
-      # Writes the exe, its manifest and the Ed25519 signature into dist/.
-      # The private key lives only in this secret and never in the tree.
+      - name: Version from the tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF_NAME -like "v*") { $env:GITHUB_REF_NAME } else { "${{ inputs.tag }}" }
+          $version = $tag.TrimStart("v")
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
+          # The tag and Cargo.toml must agree, or the launcher would
+          # report a version that is not the one that was released.
+          $cargo = (Select-String -Path Cargo.toml -Pattern '^version = "(.+)"' |
+                    Select-Object -First 1).Matches.Groups[1].Value
+          if ($cargo -ne $version) {
+            throw "the tag says $version but Cargo.toml says $cargo"
+          }
+
+      # Writes the archive, its manifest and the Ed25519 signature into
+      # dist/. The private key lives only in this secret and never in the
+      # tree.
       - name: Pack and sign
         env:
           RECOF_LAUNCHER_SIGNING_KEY: ${{ secrets.RECOF_LAUNCHER_SIGNING_KEY }}
@@ -47,15 +64,24 @@ jobs:
           cargo run --package xtask --
           pack-launcher
           --exe target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe
-          --version ${{ github.ref_name }}
+          --version ${{ steps.version.outputs.version }}
           --channel stable
           --out dist
+
+      - name: Report binary size
+        shell: pwsh
+        run: |
+          $exe = "target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe"
+          $size = (Get-Item $exe).Length
+          "ReCoF-Launcher.exe: $size bytes ($([math]::Round($size/1MB,2)) MiB)" |
+            Tee-Object -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
       - name: Publish
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            dist/ReCoF-Launcher.exe
+            dist/recof-launcher-${{ steps.version.outputs.version }}.zip
             dist/recof-launcher-manifest.json
             dist/recof-launcher-manifest.json.sig
+            target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe
           generate_release_notes: true

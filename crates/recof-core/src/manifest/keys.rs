@@ -27,11 +27,20 @@ pub struct TrustedKey {
 
 /// Every key compiled into this build.
 ///
-/// Empty until the project key is generated, which means every signature
-/// check fails closed with `err-no-trusted-keys`. That is the right
-/// behaviour: a launcher with no key must install nothing rather than
-/// everything.
-pub const TRUSTED_KEYS: &[TrustedKey] = &[];
+/// An empty list would mean every signature check fails closed with
+/// `err-no-trusted-keys`, which is the right behaviour for a launcher
+/// with no key: install nothing rather than everything.
+pub const TRUSTED_KEYS: &[TrustedKey] = &[TrustedKey {
+    id: "recof-2026a",
+    bytes: [
+        80, 205, 35, 0, 10, 117, 83, 191, 7, 114, 90, 208, 9, 244, 202, 168, 94, 194, 140, 253,
+        240, 51, 157, 80, 226, 6, 154, 181, 252, 193, 210, 57,
+    ],
+    products: &[
+        crate::manifest::Product::Recof,
+        crate::manifest::Product::RecofLauncher,
+    ],
+}];
 
 /// The keys that may sign a given product.
 pub fn keys_for(product: crate::manifest::Product) -> impl Iterator<Item = &'static TrustedKey> {

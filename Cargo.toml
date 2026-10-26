@@ -22,10 +22,9 @@ recof-platform = { path = "crates/recof-platform" }
 base64 = "0.23"
 ed25519-dalek = "3.0"
 # system_fonts loads a system font on demand for characters the built in
-# fonts lack. It costs about 360 KiB in the executable and is what makes
-# the Chinese translation, and the Chinese entry in the language list,
-# readable without embedding a ten megabyte font. Measured: 5.56 MiB
-# without it, 5.91 MiB with it.
+# fonts lack, which is what makes the Chinese translation, and the
+# Chinese entry in the language list, readable without embedding a ten
+# megabyte font. It costs 406 KiB; see docs/binary-size.md.
 eframe = { version = "0.37", default-features = false, features = [
     "glow",
     "default_fonts",
@@ -33,6 +32,7 @@ eframe = { version = "0.37", default-features = false, features = [
 ] }
 egui = "0.37"
 fluent-bundle = "0.16"
+getrandom = "0.4"
 hex = "0.4"
 log = { version = "0.4", features = ["std"] }
 rfd = { version = "0.17", default-features = false }
@@ -65,9 +65,10 @@ features = [
     "Win32_UI_WindowsAndMessaging",
 ]
 
-# Measured at phase 8: opt-level "z" against "s". See docs/binary-size.md.
+# opt-level "s" rather than "z": measured on this project, "z" produces a
+# larger executable, not a smaller one. See docs/binary-size.md.
 [profile.release]
-opt-level = "z"
+opt-level = "s"
 lto = "fat"
 codegen-units = 1
 panic = "abort"
