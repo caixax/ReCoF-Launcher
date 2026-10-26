@@ -1,0 +1,25 @@
+[package]
+name = "recof-core"
+description = "Install, update and verification logic for ReCoF Launcher. No UI."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+recof-platform.workspace = true
+
+base64.workspace = true
+ed25519-dalek.workspace = true
+hex.workspace = true
+log.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+toml.workspace = true
+ureq.workspace = true
+walkdir.workspace = true
+zip.workspace = true

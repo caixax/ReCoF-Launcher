@@ -1,0 +1,61 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build"
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: No em dashes and no en dashes
+        run: cargo run --package xtask -- check-dashes
+
+      - name: Tests
+        run: cargo test --workspace --target x86_64-pc-windows-msvc
+
+      - name: Release build
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      # Writes the exe, its manifest and the Ed25519 signature into dist/.
+      # The private key lives only in this secret and never in the tree.
+      - name: Pack and sign
+        env:
+          RECOF_LAUNCHER_SIGNING_KEY: ${{ secrets.RECOF_LAUNCHER_SIGNING_KEY }}
+        run: >
+          cargo run --package xtask --
+          pack-launcher
+          --exe target/x86_64-pc-windows-msvc/release/ReCoF-Launcher.exe
+          --version ${{ github.ref_name }}
+          --channel stable
+          --out dist
+
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/ReCoF-Launcher.exe
+            dist/recof-launcher-manifest.json
+            dist/recof-launcher-manifest.json.sig
+          generate_release_notes: true

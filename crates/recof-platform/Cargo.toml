@@ -1,0 +1,16 @@
+[package]
+name = "recof-platform"
+description = "The only crate in ReCoF Launcher allowed to touch platform APIs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+log.workspace = true
+thiserror.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+windows.workspace = true

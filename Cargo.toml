@@ -1,0 +1,70 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/recof-core",
+    "crates/recof-platform",
+    "crates/recof-launcher",
+    "xtask",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+license = "MIT"
+authors = ["caixax"]
+repository = "https://github.com/caixax/ReCoF-Launcher"
+
+[workspace.dependencies]
+recof-core = { path = "crates/recof-core" }
+recof-platform = { path = "crates/recof-platform" }
+
+base64 = "0.23"
+ed25519-dalek = "3.0"
+eframe = { version = "0.37", default-features = false, features = ["glow", "default_fonts"] }
+egui = "0.37"
+fluent-bundle = "0.16"
+hex = "0.4"
+log = "0.4"
+rfd = { version = "0.17", default-features = false }
+rust-embed = "8"
+self-replace = "1.5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha2 = "0.11"
+sys-locale = "0.3"
+thiserror = "2"
+toml = "1"
+unic-langid = { version = "0.9", features = ["macros"] }
+ureq = { version = "3", default-features = false, features = ["rustls"] }
+walkdir = "2"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+
+[workspace.dependencies.windows]
+version = "0.62"
+features = [
+    "Win32_Foundation",
+    "Win32_Graphics_Gdi",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Com",
+    "Win32_System_Registry",
+    "Win32_System_SystemInformation",
+    "Win32_System_Threading",
+    "Win32_UI_Shell",
+    "Win32_UI_Shell_Common",
+    "Win32_UI_WindowsAndMessaging",
+]
+
+# Measured at phase 8: opt-level "z" against "s". See docs/binary-size.md.
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+incremental = false
+
+# Keep the test build usable: the release profile above is tuned for size,
+# not for compile time.
+[profile.dev]
+opt-level = 0

@@ -1,0 +1,6 @@
+# Static CRT so the launcher runs without the Visual C++ redistributable.
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[alias]
+xtask = "run --package xtask --"

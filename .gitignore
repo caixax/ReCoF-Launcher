@@ -1,0 +1,15 @@
+/target/
+**/*.rs.bk
+
+# Release signing. The private key must never be committed.
+/keys/
+*.secret.key
+*.private.key
+*.pem
+
+# Release output written by xtask.
+/dist/
+
+# Local scratch
+/tmp/
+*.log

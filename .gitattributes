@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.ftl text eol=lf
+*.rs text eol=lf
+*.md text eol=lf
+*.png binary
+*.ico binary
+*.zip binary
+*.sig binary
