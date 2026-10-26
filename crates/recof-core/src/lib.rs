@@ -6,9 +6,15 @@
 
 pub mod consts;
 pub mod error;
+pub mod fsutil;
 pub mod hashes;
+pub mod journal;
 pub mod kv;
+pub mod manifest;
+pub mod paths;
 pub mod space;
 pub mod steam;
+pub mod store;
+pub mod version;
 
 pub use error::{Error, Result};

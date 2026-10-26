@@ -35,6 +35,15 @@ pub enum Error {
 
     #[error("{0} holds no cryoffear directory")]
     NoGameDir(PathBuf),
+
+    #[error("the install journal is unusable: {detail}")]
+    Journal { detail: String },
+
+    #[error("stopped on purpose at {point}")]
+    Interrupted { point: String },
+
+    #[error("{0}")]
+    Verify(#[from] crate::manifest::VerifyError),
 }
 
 impl Error {
@@ -54,6 +63,9 @@ impl Error {
             Error::Platform(inner) => inner.message_id(),
             Error::NoGameExe(_) => "err-no-game-exe",
             Error::NoGameDir(_) => "err-no-game-dir",
+            Error::Journal { .. } => "err-journal",
+            Error::Interrupted { .. } => "err-interrupted",
+            Error::Verify(inner) => inner.message_id(),
         }
     }
 
@@ -67,6 +79,7 @@ impl Error {
             Error::NoGameExe(path) | Error::NoGameDir(path) => {
                 vec![("path", path.display().to_string())]
             }
+            Error::Journal { .. } | Error::Interrupted { .. } | Error::Verify(_) => Vec::new(),
         }
     }
 }
