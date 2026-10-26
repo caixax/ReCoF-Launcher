@@ -262,21 +262,35 @@ pub fn maintenance(app: &mut App, ui: &mut egui::Ui) {
             theme::help(ui, &app.t("uninstall-explain"));
             ui.add_space(6.0);
 
-            let mut keep_backups = true;
-            ui.checkbox(&mut keep_backups, app.t("uninstall-keep-backups"));
+            // Both are remembered across frames, because a checkbox
+            // that resets itself every repaint cannot be ticked.
+            let keep_id = ui.scope_id().with("keep-backups");
+            let export_id = ui.scope_id().with("export-saves");
+            let mut keep_backups = ui.data(|data| data.get_temp(keep_id)).unwrap_or(true);
+            let mut export_saves = ui.data(|data| data.get_temp(export_id)).unwrap_or(true);
+
+            let export_label = app.t("uninstall-export-first");
+            let keep_label = app.t("uninstall-keep-backups");
+            if ui.checkbox(&mut export_saves, export_label).changed() {
+                ui.data_mut(|data| data.insert_temp(export_id, export_saves));
+            }
+            if ui.checkbox(&mut keep_backups, keep_label).changed() {
+                ui.data_mut(|data| data.insert_temp(keep_id, keep_backups));
+            }
 
             ui.add_enabled_ui(!app.worker.is_busy(), |ui| {
                 if ui.button(app.t("uninstall-title")).clicked() {
-                    app.confirm = Some(Confirm {
-                        question: app.t_args(
+                    app.confirm = Some(Confirm::new(
+                        app.t_args(
                             "uninstall-confirm",
                             &[("path", install_root.display().to_string())],
                         ),
-                        confirm_label: app.t("uninstall-title"),
-                        action: ConfirmAction::Uninstall {
+                        app.t("uninstall-title"),
+                        ConfirmAction::Uninstall {
                             remove_backups: !keep_backups,
+                            export_saves,
                         },
-                    });
+                    ));
                 }
             });
         });
@@ -538,14 +552,15 @@ fn backups(app: &mut App, ui: &mut egui::Ui, install_root: &std::path::Path) {
                 );
                 ui.add_enabled_ui(!app.worker.is_busy(), |ui| {
                     if ui.small_button(app.t("maintain-restore")).clicked() {
-                        app.progress = Some(Progress {
-                            headline: app.t("maintain-restore"),
-                            ..Default::default()
-                        });
-                        app.worker.send(Job::Restore {
-                            archive: backup.path.clone(),
-                            install_root: install_root.to_path_buf(),
-                        });
+                        // Restoring replaces the saves in the copy, so
+                        // it asks before it does it.
+                        app.confirm = Some(Confirm::new(
+                            app.t_args("backup-restore-confirm", &[("name", backup.name.clone())]),
+                            app.t("maintain-restore"),
+                            ConfirmAction::RestoreBackup {
+                                archive: backup.path.clone(),
+                            },
+                        ));
                     }
                 });
             });

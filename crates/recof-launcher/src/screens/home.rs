@@ -3,7 +3,7 @@
 use recof_core::launch::{self, CvarFile, CvarKind, LaunchProblem};
 use recof_platform::DisplayMode;
 
-use crate::app::{App, Notice, Screen};
+use crate::app::{App, Confirm, ConfirmAction, Notice, Screen};
 use crate::theme;
 
 pub fn home(app: &mut App, ui: &mut egui::Ui) {
@@ -123,18 +123,32 @@ fn start_game(app: &mut App, install_root: &std::path::Path) {
         return;
     }
 
+    // Steam not running is the user's call, not the launcher's: the
+    // game works without it, it just loses what Steam provides.
     if problems.contains(&LaunchProblem::SteamNotRunning) {
-        app.notice = Some(Notice::warn(format!(
-            "{} {}",
-            app.t("launch-steam-not-running"),
-            app.t("launch-steam-not-running-help")
-        )));
-        if let Err(error) = launch::open_steam() {
-            log::warn!("Steam could not be opened: {error}");
-        }
+        app.confirm = Some(
+            Confirm::new(
+                format!(
+                    "{} {}",
+                    app.t("launch-steam-not-running"),
+                    app.t("launch-steam-not-running-help")
+                ),
+                app.t("launch-open-steam"),
+                ConfirmAction::OpenSteam,
+            )
+            .or(app.t("launch-start-anyway"), ConfirmAction::LaunchAnyway),
+        );
         return;
     }
 
+    start_game_now(app, install_root);
+}
+
+/// Starts the game without asking anything further.
+///
+/// Reached from the play button once the checks have passed, and from
+/// the "start anyway" answer when Steam is not running.
+pub fn start_game_now(app: &mut App, install_root: &std::path::Path) {
     let cvars = cvar_args(app);
     match launch::play_recof(install_root, &app.settings.launch, &cvars) {
         Ok(pid) => {

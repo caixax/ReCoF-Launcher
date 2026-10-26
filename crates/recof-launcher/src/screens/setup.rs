@@ -455,6 +455,8 @@ pub fn destination(app: &mut App, ui: &mut egui::Ui) {
     ui.add_space(8.0);
     let import_label = app.t("install-offer-import");
     ui.checkbox(&mut app.import_on_install, import_label);
+    let shortcut_label = app.t("install-offer-shortcuts");
+    ui.checkbox(&mut app.shortcut_on_install, shortcut_label);
 
     ui.add_space(8.0);
     theme::rule(ui);
@@ -543,10 +545,10 @@ pub fn installing(app: &mut App, ui: &mut egui::Ui) {
 
     ui.add_space(20.0);
     if ui.button(app.t("button-cancel")).clicked() {
-        app.confirm = Some(Confirm {
-            question: app.t("install-cancel-confirm"),
-            confirm_label: app.t("button-yes"),
-            action: ConfirmAction::CancelInstall,
-        });
+        app.confirm = Some(Confirm::new(
+            app.t("install-cancel-confirm"),
+            app.t("button-yes"),
+            ConfirmAction::CancelInstall,
+        ));
     }
 }

@@ -41,6 +41,14 @@ pub const LAUNCHER_REPO: &str = "caixax/ReCoF-Launcher";
 /// Version of this launcher, from Cargo.
 pub const LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+/// Discord application id for Rich Presence.
+///
+/// Empty until somebody creates the application at
+/// <https://discord.com/developers/applications> and pastes its id
+/// here. While it is empty the setting reports itself as unavailable
+/// rather than silently doing nothing. Nothing else depends on it.
+pub const DISCORD_APP_ID: &str = "";
+
 /// Steam URL that starts retail Cry of Fear.
 pub const VANILLA_LAUNCH_URL: &str = "steam://rungameid/223710";
 

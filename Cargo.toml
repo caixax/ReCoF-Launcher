@@ -20,6 +20,7 @@ recof-core = { path = "crates/recof-core" }
 recof-platform = { path = "crates/recof-platform" }
 
 base64 = "0.23"
+discord-rich-presence = "1.1"
 ed25519-dalek = "3.0"
 # system_fonts loads a system font on demand for characters the built in
 # fonts lack, which is what makes the Chinese translation, and the

@@ -90,13 +90,44 @@ pub struct Confirm {
     pub question: String,
     pub confirm_label: String,
     pub action: ConfirmAction,
+    /// A second way forward, for a question with more than one
+    /// sensible answer. Steam not running is the case: open Steam, or
+    /// start anyway.
+    pub alternative: Option<(String, ConfirmAction)>,
+}
+
+impl Confirm {
+    /// A plain yes or no.
+    pub fn new(question: String, confirm_label: String, action: ConfirmAction) -> Self {
+        Confirm {
+            question,
+            confirm_label,
+            action,
+            alternative: None,
+        }
+    }
+
+    pub fn or(mut self, label: String, action: ConfirmAction) -> Self {
+        self.alternative = Some((label, action));
+        self
+    }
 }
 
 /// What a confirmation will do if accepted.
 #[derive(Debug, Clone)]
 pub enum ConfirmAction {
     CancelInstall,
-    Uninstall { remove_backups: bool },
+    Uninstall {
+        remove_backups: bool,
+        export_saves: bool,
+    },
+    /// Open Steam and leave the game for the user to start.
+    OpenSteam,
+    /// Start ReCoF even though Steam is not running.
+    LaunchAnyway,
+    RestoreBackup {
+        archive: std::path::PathBuf,
+    },
 }
 
 pub struct App {
@@ -129,6 +160,14 @@ pub struct App {
     /// Whether the install should bring the vanilla saves over. Not a
     /// setting: it only matters while the install wizard is open.
     pub import_on_install: bool,
+    /// Whether to make a desktop shortcut once the install finishes.
+    pub shortcut_on_install: bool,
+
+    /// Discord Rich Presence, which is off unless the setting is on.
+    pub presence: recof_core::presence::Presence,
+    /// When the game was last checked for, so the poll is not run on
+    /// every frame.
+    pub presence_checked: std::time::Instant,
 
     /// What the last update check found.
     pub updates: UpdateCheck,
@@ -201,6 +240,9 @@ impl App {
             measured_for: None,
             installed,
             import_on_install: true,
+            shortcut_on_install: false,
+            presence: recof_core::presence::Presence::new(),
+            presence_checked: std::time::Instant::now(),
             updates: UpdateCheck::default(),
             update_check_requested: false,
             self_update_ready: None,
@@ -344,6 +386,19 @@ impl App {
                 self.notice = Some(Notice::good(
                     self.t_args("install-done", &[("version", version)]),
                 ));
+                if self.shortcut_on_install {
+                    self.shortcut_on_install = false;
+                    if let Some(root) = self.settings.install_path.clone() {
+                        let arguments =
+                            recof_core::launch::build(&self.settings.launch, &[]).join(" ");
+                        self.worker.send(crate::worker::Job::MakeShortcut {
+                            kind: crate::worker::ShortcutKind::Desktop,
+                            install_root: root,
+                            arguments,
+                            name: "ReCoF".to_owned(),
+                        });
+                    }
+                }
             }
             Event::InstallCancelled => {
                 self.progress = None;
@@ -510,10 +565,29 @@ impl App {
     pub fn run_confirmed(&mut self, action: ConfirmAction) {
         match action {
             ConfirmAction::CancelInstall => self.worker.cancel(),
-            ConfirmAction::Uninstall { remove_backups } => {
+            ConfirmAction::Uninstall {
+                remove_backups,
+                export_saves,
+            } => {
                 let Some(install_root) = self.settings.install_path.clone() else {
                     return;
                 };
+                // Exporting goes first and through the same queue, so
+                // the saves are safely in the backups folder before the
+                // copy is removed.
+                if export_saves {
+                    self.worker.send(Job::Backup {
+                        install_root: install_root.clone(),
+                        app_data: self.paths.root().to_path_buf(),
+                        kind: recof_core::backup::BackupKind::Export,
+                        now: crate::now_rfc3339(),
+                        stamp: crate::now_stamp(),
+                        recof_version: self
+                            .installed
+                            .as_ref()
+                            .map(|state| state.version.to_string()),
+                    });
+                }
                 self.progress = Some(Progress {
                     headline: self.t("uninstall-title"),
                     ..Default::default()
@@ -525,6 +599,29 @@ impl App {
                         remove_version_store: true,
                         remove_backups,
                     },
+                });
+            }
+            ConfirmAction::OpenSteam => {
+                if let Err(error) = recof_core::launch::open_steam() {
+                    log::warn!("Steam could not be opened: {error}");
+                }
+            }
+            ConfirmAction::LaunchAnyway => {
+                if let Some(root) = self.settings.install_path.clone() {
+                    crate::screens::home::start_game_now(self, &root);
+                }
+            }
+            ConfirmAction::RestoreBackup { archive } => {
+                let Some(install_root) = self.settings.install_path.clone() else {
+                    return;
+                };
+                self.progress = Some(Progress {
+                    headline: self.t("maintain-restore"),
+                    ..Default::default()
+                });
+                self.worker.send(Job::Restore {
+                    archive,
+                    install_root,
                 });
             }
         }
@@ -575,10 +672,48 @@ impl eframe::App for App {
             });
 
         self.draw_confirm(&ctx);
+        self.update_presence();
     }
 }
 
 impl App {
+    /// Keeps the Discord presence in step with whether the game is
+    /// open.
+    ///
+    /// Polled every few seconds rather than every frame: it asks the
+    /// system for the process list, which is not something to do sixty
+    /// times a second.
+    fn update_presence(&mut self) {
+        const EVERY: std::time::Duration = std::time::Duration::from_secs(3);
+        if self.presence_checked.elapsed() < EVERY {
+            return;
+        }
+        self.presence_checked = std::time::Instant::now();
+
+        if !self.settings.discord_rich_presence {
+            if self.presence.is_showing() {
+                self.presence.disconnect();
+            }
+            return;
+        }
+
+        let running = matches!(
+            recof_platform::is_running_by_name(recof_core::launch::GAME_PROCESS),
+            Ok(true)
+        );
+        match (running, self.installed.as_ref()) {
+            (true, Some(state)) => {
+                let version = state.version.to_string();
+                let _ = self.presence.show_playing(&version);
+            }
+            _ => {
+                if self.presence.is_showing() {
+                    self.presence.clear();
+                }
+            }
+        }
+    }
+
     fn draw(&mut self, ui: &mut egui::Ui) {
         match self.screen {
             Screen::Language => screens::setup::language(self, ui),
@@ -624,6 +759,12 @@ impl App {
                     if ui.button(&confirm.confirm_label).clicked() {
                         self.run_confirmed(confirm.action.clone());
                         open = false;
+                    }
+                    if let Some((label, action)) = &confirm.alternative {
+                        if ui.button(label).clicked() {
+                            self.run_confirmed(action.clone());
+                            open = false;
+                        }
                     }
                     if ui.button(self.t("button-cancel")).clicked() {
                         open = false;

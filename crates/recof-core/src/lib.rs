@@ -17,6 +17,7 @@ pub mod log_file;
 pub mod manifest;
 pub mod net;
 pub mod paths;
+pub mod presence;
 pub mod settings;
 pub mod space;
 pub mod steam;
