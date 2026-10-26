@@ -11,6 +11,7 @@ use std::process::ExitCode;
 mod dashes;
 mod detect;
 mod release;
+mod smoke;
 
 const USAGE: &str = "\
 ReCoF Launcher release tooling
@@ -20,6 +21,16 @@ Usage:
 
 Commands:
   check-dashes          Fail if an em dash or an en dash appears in the tree
+  detect [--measure]    Print what the launcher sees on this machine
+  keygen --id <id>      Make a signing key pair in keys/
+  pack-recof ...        Pack, sign and check a ReCoF release (docs/releases.md)
+  pack-launcher ...     Pack, sign and check a launcher release
+  hash-table --from <dir>
+                        Hash the in scope files of a real install
+  smoke --dest <dir> [--channel beta|stable] [--keep]
+                        Install the newest published release into <dir> from
+                        the real game, verify, repair and uninstall it, and
+                        check the Steam install did not change
   help                  Show this message
 ";
 
@@ -34,6 +45,7 @@ fn main() -> ExitCode {
         "pack-recof" => release::pack_recof(&args, &repo_root()),
         "pack-launcher" => release::pack_launcher(&args, &repo_root()),
         "hash-table" => release::hash_table(&args, &repo_root()),
+        "smoke" => smoke::run(&args),
         "help" | "-h" | "--help" => {
             print!("{USAGE}");
             Ok(())

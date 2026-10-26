@@ -155,6 +155,10 @@ pub fn start_game_now(app: &mut App, install_root: &std::path::Path) {
             log::info!("ReCoF started as process {pid}");
             app.notice = Some(Notice::good(app.t("launch-starting")));
         }
+        Err(error @ recof_core::Error::CommandLineTooLong { .. }) => {
+            log::error!("starting ReCoF: {error}");
+            app.show_error(error.message_id(), &error.message_args());
+        }
         Err(error) => {
             log::error!("starting ReCoF: {error}");
             app.notice = Some(Notice::bad(app.t("launch-failed")));
@@ -270,12 +274,26 @@ fn launch_options(app: &mut App, ui: &mut egui::Ui) {
                     .to_string()
             })
             .unwrap_or_else(|| recof_core::consts::GAME_EXE.to_owned());
+        let line = launch::preview(&exe, &args);
+        let too_long = line.len() > launch::MAX_COMMAND_LINE;
         ui.label(
-            egui::RichText::new(launch::preview(&exe, &args))
+            egui::RichText::new(&line)
                 .monospace()
                 .size(11.5)
                 .color(theme::TEXT_DIM),
         );
+        if too_long {
+            ui.label(
+                egui::RichText::new(app.t_args(
+                    "err-command-line-too-long",
+                    &[
+                        ("length", line.len().to_string()),
+                        ("limit", launch::MAX_COMMAND_LINE.to_string()),
+                    ],
+                ))
+                .color(theme::BAD),
+            );
+        }
     });
 }
 
@@ -304,6 +322,9 @@ fn recof_options(app: &mut App, ui: &mut egui::Ui) {
         theme::help(ui, &app.t("launch-cvars-from-release"));
         ui.add_space(6.0);
 
+        // What the game saved, so an option the user never set in the
+        // launcher shows what the game will really use.
+        let saved = app.saved_cvars();
         let mut changed = false;
         for group in file.groups() {
             if !group.is_empty() {
@@ -311,8 +332,14 @@ fn recof_options(app: &mut App, ui: &mut egui::Ui) {
                 ui.label(egui::RichText::new(group).color(theme::TEXT_DIM).strong());
             }
             for cvar in file.cvars.iter().filter(|cvar| cvar.group == group) {
-                changed |= one_cvar(app, ui, cvar);
+                changed |= one_cvar(app, ui, cvar, &saved);
             }
+        }
+
+        ui.add_space(6.0);
+        if ui.button(app.t("launch-cvars-defaults")).clicked() {
+            app.settings.launch.cvars.extend(file.defaults());
+            changed = true;
         }
         if changed {
             app.save_settings();
@@ -321,7 +348,12 @@ fn recof_options(app: &mut App, ui: &mut egui::Ui) {
 }
 
 /// Draws one option and returns whether it changed.
-fn one_cvar(app: &mut App, ui: &mut egui::Ui, cvar: &recof_core::launch::Cvar) -> bool {
+fn one_cvar(
+    app: &mut App,
+    ui: &mut egui::Ui,
+    cvar: &recof_core::launch::Cvar,
+    saved: &std::collections::BTreeMap<String, String>,
+) -> bool {
     // A label the launcher has a translation for wins; otherwise the
     // English text the release shipped is used, so an option added after
     // this launcher was built is still readable.
@@ -337,17 +369,11 @@ fn one_cvar(app: &mut App, ui: &mut egui::Ui, cvar: &recof_core::launch::Cvar) -
         None => cvar.desc_en.clone(),
     };
 
-    let current = app
-        .settings
-        .launch
-        .cvars
-        .get(&cvar.name)
-        .cloned()
-        .unwrap_or_else(|| cvar.default.clone());
+    let current = cvar.current(&app.settings.launch.cvars, saved).to_owned();
     let mut changed = false;
 
     match cvar.kind {
-        CvarKind::Bool => {
+        CvarKind::Bool | CvarKind::Flag => {
             let mut on = current == "1";
             if ui.checkbox(&mut on, label).changed() {
                 app.settings

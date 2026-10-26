@@ -66,11 +66,11 @@ pub const RETAIL_1_6A: &[KnownFile] = &[
         variants: &[],
     },
     KnownFile {
-        // Never part of a ReCoF release: it embeds retail art and sound.
+        // ReCoF releases carry the rebuilt settings dialog.
         path: "CoFLaunchApp.exe",
         size: 2_683_904,
         sha256: "bbdbac8c321e5f7561e2669f333dad3261b94f67459beb1907ce5164af6e54cb",
-        replaced_by_recof: false,
+        replaced_by_recof: true,
         variants: &[KnownVariant {
             // Seen on a real install: the Cry of Fear Enhanced community
             // patch replaces this file and keeps the retail one in
@@ -258,10 +258,8 @@ mod tests {
     }
 
     #[test]
-    fn the_launcher_app_is_never_part_of_a_release() {
-        // It embeds art and sound taken out of the retail executable, so a
-        // public release can never contain it.
-        assert!(!known_file("CoFLaunchApp.exe").unwrap().replaced_by_recof);
+    fn the_settings_dialog_is_replaced_by_a_release() {
+        assert!(known_file("CoFLaunchApp.exe").unwrap().replaced_by_recof);
     }
 
     #[test]

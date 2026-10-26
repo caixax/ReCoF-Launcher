@@ -173,6 +173,10 @@ pub struct App {
     pub updates: UpdateCheck,
     /// Whether the check has been asked for, so it runs once per start.
     pub update_check_requested: bool,
+    /// Whether a check is running now.
+    pub update_checking: bool,
+    /// A release zip picked on the install screen, instead of downloading.
+    pub install_file: Option<PathBuf>,
     /// Set once a newer launcher has been written to disk, so the user
     /// can be asked to restart.
     pub self_update_ready: Option<recof_core::version::Version>,
@@ -182,6 +186,13 @@ pub struct App {
     pub backups_listed: bool,
     /// What an import would do, worked out before it is offered.
     pub import_plan: Option<recof_core::backup::ImportPlan>,
+
+    /// The console variables the game saved in the copy, and when they
+    /// were read.
+    saved_cvars: Option<(
+        std::time::Instant,
+        std::collections::BTreeMap<String, String>,
+    )>,
 }
 
 impl App {
@@ -245,10 +256,13 @@ impl App {
             presence_checked: std::time::Instant::now(),
             updates: UpdateCheck::default(),
             update_check_requested: false,
+            update_checking: false,
+            install_file: None,
             self_update_ready: None,
             backups: Vec::new(),
             backups_listed: false,
             import_plan: None,
+            saved_cvars: None,
         };
 
         // An interrupted operation is finished or undone before anything
@@ -302,6 +316,29 @@ impl App {
             .as_ref()
             .and_then(|detection| detection.game.as_ref())
             .and_then(|game| game.buildid)
+    }
+
+    /// The console variables the game saved in the copy, read again at
+    /// most every two seconds rather than on every frame, so a value the
+    /// game wrote on exit shows up soon after.
+    pub fn saved_cvars(&mut self) -> std::collections::BTreeMap<String, String> {
+        let fresh = self
+            .saved_cvars
+            .as_ref()
+            .is_some_and(|(read, _)| read.elapsed() < std::time::Duration::from_secs(2));
+        if !fresh {
+            let values = self
+                .settings
+                .install_path
+                .as_deref()
+                .map(recof_core::launch::saved_values)
+                .unwrap_or_default();
+            self.saved_cvars = Some((std::time::Instant::now(), values));
+        }
+        self.saved_cvars
+            .as_ref()
+            .map(|(_, values)| values.clone())
+            .unwrap_or_default()
     }
 
     /// The newest release sitting in the version store.
@@ -460,6 +497,7 @@ impl App {
             }
             Event::UpdatesChecked(found) => {
                 self.updates = *found;
+                self.update_checking = false;
             }
             Event::Updated(state) => {
                 let version = state.version.to_string();
@@ -520,6 +558,11 @@ impl App {
             } => {
                 log::error!("{detail}");
                 self.progress = None;
+                // An install that failed has nothing left to show progress
+                // for, and the choices that led to it are one step back.
+                if self.screen == Screen::Installing {
+                    self.screen = Screen::Destination;
+                }
                 self.notice = Some(Notice::bad(self.translator.get_with(message_id, &args)));
             }
         }

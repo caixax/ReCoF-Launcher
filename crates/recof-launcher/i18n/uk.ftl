@@ -108,6 +108,16 @@ install-cancel-confirm = Зупинити встановлення? Усе ск�
 install-cancelled = Встановлення скасовано, нічого недоробленого не залишилося.
 install-offer-import = Перенести мої збереження, налаштування та відкритий вміст із копії Steam
 install-offer-shortcuts = Створити ярлик на стільниці
+install-release-title = Що буде встановлено
+install-release-version = ReCoF { $version }
+install-release-download = Завантажується з GitHub і перевіряється за підписом, перш ніж щось буде скопійовано.
+install-release-stored = Уже завантажено й перевірено.
+install-release-file = З файлу { $name }
+install-release-file-help = Підписаний маніфест поруч із zip перевіряється, перш ніж щось буде скопійовано.
+install-release-file-clear = Використати опубліковану версію
+install-release-checking = Пошук останньої версії
+install-release-offline = Не вдалося зв'язатися з GitHub. Спробуйте ще раз або встановіть із файлу.
+install-release-try-beta = У стабільному каналі ще нічого не випущено. Тестувальники можуть перейти на бету.
 
 ## Головний екран
 
@@ -147,6 +157,7 @@ launch-preview = Командний рядок
 launch-cvars-title = Параметри ReCoF
 launch-cvars-none = У цій версії ReCoF немає власних параметрів.
 launch-cvars-from-release = Вони походять зі встановленої у вас версії ReCoF.
+launch-cvars-defaults = Повернути типові значення
 
 ## Оновлення
 
@@ -168,6 +179,11 @@ update-launcher-title = Оновлення програми
 update-launcher-restart = Програма перезапуститься, щоб завершити оновлення.
 update-from-file = Встановити з файлу
 update-from-file-help = Оберіть zip-архів випуску. Підписаний маніфест має лежати поряд.
+changelog-note = Примітка
+changelog-tip = Порада
+changelog-important = Важливо
+changelog-warning = Попередження
+changelog-caution = Обережно
 
 channel-title = Канал випусків
 channel-stable = Стабільний
@@ -298,3 +314,4 @@ err-network = Зв'язатися з GitHub не вдалося. Перевір�
 err-github = GitHub відповів помилкою: { $detail }
 err-rate-limited = GitHub обмежує запити з цього з'єднання. Спробуйте за кілька хвилин.
 err-no-release = У цьому каналі ще нічого не випущено.
+err-command-line-too-long = Командний рядок мав би { $length } символів, а гра приймає щонайбільше { $limit }. Скоротіть додаткові аргументи.

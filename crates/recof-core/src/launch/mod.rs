@@ -9,8 +9,8 @@ pub mod cvars;
 
 use std::path::Path;
 
-pub use args::{build, preview, CvarArg};
-pub use cvars::{Cvar, CvarFile, CvarKind};
+pub use args::{build, preview, CvarArg, MAX_COMMAND_LINE};
+pub use cvars::{saved_values, Cvar, CvarFile, CvarKind};
 
 use crate::consts::{GAME_EXE, VANILLA_LAUNCH_URL};
 use crate::settings::LaunchSettings;
@@ -78,10 +78,19 @@ pub fn play_recof(
     }
 
     let arguments = build(settings, cvars);
-    log::info!(
-        "starting {}",
-        preview(&exe.display().to_string(), &arguments)
-    );
+    let line = preview(&exe.display().to_string(), &arguments);
+    if line.len() > MAX_COMMAND_LINE {
+        return Err(Error::CommandLineTooLong { length: line.len() });
+    }
+    // The engine reads config.cfg after the command line, so an option the
+    // game saved there goes in there too. Failing to write it is not a
+    // reason to refuse to play.
+    match cvars::write_saved(install_root, cvars) {
+        Ok(0) => {}
+        Ok(count) => log::info!("{count} options in config.cfg set to the launcher's values"),
+        Err(error) => log::warn!("config.cfg was not updated, saved options may win: {error}"),
+    }
+    log::info!("starting {line}");
     Ok(recof_platform::spawn(&exe, &arguments, install_root)?)
 }
 
@@ -122,6 +131,26 @@ mod tests {
         assert!(matches!(outcome, Err(Error::NoGameExe(_))));
 
         std::fs::remove_dir_all(&empty).unwrap();
+    }
+
+    #[test]
+    fn a_command_line_the_engine_would_overrun_on_is_refused() {
+        let copy = std::env::temp_dir().join("recof-launch-long");
+        let _ = std::fs::remove_dir_all(&copy);
+        std::fs::create_dir_all(&copy).unwrap();
+        std::fs::write(copy.join(GAME_EXE), b"not really the game").unwrap();
+
+        let settings = LaunchSettings {
+            extra_args: "-x ".repeat(400),
+            ..LaunchSettings::default()
+        };
+        let outcome = play_recof(&copy, &settings, &[]);
+        assert!(
+            matches!(outcome, Err(Error::CommandLineTooLong { length }) if length > MAX_COMMAND_LINE),
+            "{outcome:?}"
+        );
+
+        std::fs::remove_dir_all(&copy).unwrap();
     }
 
     #[test]

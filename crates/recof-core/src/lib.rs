@@ -5,6 +5,7 @@
 //! Linux port stays a matter of filling in that one crate.
 
 pub mod backup;
+pub mod changelog;
 pub mod consts;
 pub mod error;
 pub mod fsutil;

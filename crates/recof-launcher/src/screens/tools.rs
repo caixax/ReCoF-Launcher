@@ -87,6 +87,9 @@ pub fn settings(app: &mut App, ui: &mut egui::Ui) {
             if changed {
                 app.settings.channel = channel;
                 app.save_settings();
+                // What was found belongs to the other channel.
+                app.updates = crate::worker::UpdateCheck::default();
+                crate::screens::updates::check_now(app);
             }
         });
 

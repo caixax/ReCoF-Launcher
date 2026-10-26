@@ -109,6 +109,16 @@ install-cancel-confirm = Installation abbrechen? Alles bisher Kopierte wird entf
 install-cancelled = Die Installation wurde abgebrochen und hat nichts hinterlassen.
 install-offer-import = Spielstände, Einstellungen und Freischaltungen aus der Steam-Kopie übernehmen
 install-offer-shortcuts = Verknüpfung auf dem Desktop anlegen
+install-release-title = Was installiert wird
+install-release-version = ReCoF { $version }
+install-release-download = Wird von GitHub heruntergeladen und vor dem Kopieren anhand der Signatur geprüft.
+install-release-stored = Bereits heruntergeladen und geprüft.
+install-release-file = Aus { $name }
+install-release-file-help = Das signierte Manifest neben der ZIP-Datei wird vor dem Kopieren geprüft.
+install-release-file-clear = Stattdessen eine veröffentlichte Version verwenden
+install-release-checking = Suche nach der neuesten Version
+install-release-offline = GitHub ist nicht erreichbar. Versuche es erneut oder installiere aus einer Datei.
+install-release-try-beta = Im stabilen Kanal ist noch nichts veröffentlicht. Tester können zu Beta wechseln.
 
 ## Der Hauptbildschirm
 
@@ -148,6 +158,7 @@ launch-preview = Befehlszeile
 launch-cvars-title = ReCoF-Optionen
 launch-cvars-none = Diese Version von ReCoF bringt keine eigenen Optionen mit.
 launch-cvars-from-release = Sie stammen aus der installierten Version von ReCoF.
+launch-cvars-defaults = Auf Standardwerte zurücksetzen
 
 ## Updates
 
@@ -169,6 +180,11 @@ update-launcher-title = Launcher-Update
 update-launcher-restart = Der Launcher startet neu, um das Update abzuschließen.
 update-from-file = Aus einer Datei installieren
 update-from-file-help = Wähle ein Release-Zip. Das signierte Manifest muss daneben liegen.
+changelog-note = Hinweis
+changelog-tip = Tipp
+changelog-important = Wichtig
+changelog-warning = Warnung
+changelog-caution = Vorsicht
 
 channel-title = Veröffentlichungskanal
 channel-stable = Stabil
@@ -299,3 +315,4 @@ err-network = GitHub war nicht erreichbar. Prüfe deine Verbindung und versuche 
 err-github = GitHub hat mit einem Fehler geantwortet: { $detail }
 err-rate-limited = GitHub drosselt diese Verbindung. Versuche es in ein paar Minuten erneut.
 err-no-release = In diesem Kanal wurde noch nichts veröffentlicht.
+err-command-line-too-long = Die Befehlszeile wäre { $length } Zeichen lang, das Spiel nimmt höchstens { $limit }. Kürze die zusätzlichen Argumente.

@@ -25,6 +25,17 @@ use recof_core::update::{self, Available, FetchProgress};
 use recof_core::version::Version;
 use recof_core::Error;
 
+/// Where the release a first install applies comes from.
+#[derive(Debug, Clone)]
+pub enum InstallRelease {
+    /// Already in the version store.
+    Stored(Box<StoredVersion>),
+    /// Published on GitHub. Downloaded and checked before the copy starts.
+    Download(Box<Available>),
+    /// A release zip the user picked, with its signed manifest next to it.
+    File(PathBuf),
+}
+
 /// Something for the worker to do.
 pub enum Job {
     /// Find Steam, find the game, hash its files.
@@ -35,13 +46,14 @@ pub enum Job {
         destination: PathBuf,
         app_data: PathBuf,
     },
-    /// Copy the game and apply a release.
+    /// Get the release if it is not stored yet, copy the game and apply it.
     Install {
         source: PathBuf,
         source_buildid: Option<u64>,
         destination: PathBuf,
         measured: TreeSize,
-        release: Box<StoredVersion>,
+        release: InstallRelease,
+        app_data: PathBuf,
         import_from: Option<PathBuf>,
         now: String,
         id: String,
@@ -381,10 +393,25 @@ fn run(job: Job, cancel: &Arc<AtomicBool>, emit: &dyn Fn(Event)) {
             destination,
             measured,
             release,
+            app_data,
             import_from,
             now,
             id,
         } => {
+            // The release is fetched and checked first, so a download that
+            // fails or is refused costs no copy of the game.
+            let release = match store_release(release, &app_data, source_buildid, cancel, emit) {
+                Ok(Some(release)) => release,
+                Ok(None) => {
+                    emit(Event::InstallCancelled);
+                    return;
+                }
+                Err(error) => {
+                    emit(failed(error));
+                    return;
+                }
+            };
+
             let outcome = install::install(
                 install::InstallRequest {
                     source: &source,
@@ -827,6 +854,59 @@ fn update_recof(
     }
 
     Event::Updated(Box::new(state))
+}
+
+/// Puts the release a first install needs in the version store.
+///
+/// Returns `None` when the download was cancelled.
+fn store_release(
+    release: InstallRelease,
+    app_data: &Path,
+    source_buildid: Option<u64>,
+    cancel: &Arc<AtomicBool>,
+    emit: &dyn Fn(Event),
+) -> Result<Option<StoredVersion>, Error> {
+    let paths = AppPaths::at(app_data);
+    let store = VersionStore::new(paths.versions_dir());
+    let running =
+        Version::parse(recof_core::consts::LAUNCHER_VERSION).map_err(|error| Error::Journal {
+            detail: error.to_string(),
+        })?;
+    let progress = &mut |progress: FetchProgress| emit(Event::FetchProgress(progress));
+
+    match release {
+        InstallRelease::Stored(stored) => Ok(Some(*stored)),
+        InstallRelease::Download(available) => {
+            let Some(fetched) = update::fetch(
+                &available.release,
+                Product::Recof,
+                &paths.downloads_dir(),
+                cancel,
+                progress,
+            )?
+            else {
+                return Ok(None);
+            };
+            update::verify_and_store(
+                &fetched,
+                Product::Recof,
+                &running,
+                source_buildid,
+                &store,
+                progress,
+            )
+            .map(Some)
+        }
+        InstallRelease::File(archive) => update::from_local_archive(
+            &archive,
+            Product::Recof,
+            &running,
+            source_buildid,
+            &store,
+            progress,
+        )
+        .map(Some),
+    }
 }
 
 fn install_from_file(

@@ -50,6 +50,9 @@ pub enum Error {
 
     #[error("the release does not include {0}")]
     MissingAsset(String),
+
+    #[error("the command line would be {length} bytes, more than the engine takes")]
+    CommandLineTooLong { length: usize },
 }
 
 impl Error {
@@ -74,6 +77,7 @@ impl Error {
             Error::Verify(inner) => inner.message_id(),
             Error::Net(inner) => inner.message_id(),
             Error::MissingAsset(_) => "err-bad-manifest",
+            Error::CommandLineTooLong { .. } => "err-command-line-too-long",
         }
     }
 
@@ -88,6 +92,10 @@ impl Error {
                 vec![("path", path.display().to_string())]
             }
             Error::Net(inner) => inner.message_args(),
+            Error::CommandLineTooLong { length } => vec![
+                ("length", length.to_string()),
+                ("limit", crate::launch::MAX_COMMAND_LINE.to_string()),
+            ],
             Error::Journal { .. }
             | Error::Interrupted { .. }
             | Error::Verify(_)

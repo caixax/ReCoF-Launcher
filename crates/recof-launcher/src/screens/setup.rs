@@ -4,12 +4,14 @@ use std::path::PathBuf;
 
 use recof_core::hashes::FileVerdict;
 use recof_core::install::destination;
+use recof_core::manifest::{Channel, Product};
 use recof_core::space::format_bytes;
 
 use crate::app::{App, Confirm, ConfirmAction, Progress, Screen, INTRO_SCREENS};
 use crate::i18n::LANGUAGES;
+use crate::screens::updates;
 use crate::theme;
-use crate::worker::Job;
+use crate::worker::{InstallRelease, Job, UpdateCheck};
 
 /// First run, step one: the language list with the system one preselected.
 pub fn language(app: &mut App, ui: &mut egui::Ui) {
@@ -459,15 +461,18 @@ pub fn destination(app: &mut App, ui: &mut egui::Ui) {
     ui.checkbox(&mut app.shortcut_on_install, shortcut_label);
 
     ui.add_space(8.0);
+    release_card(app, ui);
+
+    ui.add_space(8.0);
     theme::rule(ui);
 
-    let stored = app.newest_stored();
+    let release = release_to_install(app);
     let fits = app
         .measurement
         .as_ref()
         .map(|measurement| measurement.plan.fits())
         .unwrap_or(false);
-    let ready = problem.is_none() && fits && stored.is_some() && !app.worker.is_busy();
+    let ready = problem.is_none() && fits && release.is_some() && !app.worker.is_busy();
 
     ui.horizontal(|ui| {
         if ui.button(app.t("button-back")).clicked() {
@@ -476,7 +481,9 @@ pub fn destination(app: &mut App, ui: &mut egui::Ui) {
 
         ui.add_enabled_ui(ready, |ui| {
             if theme::primary_button(ui, &app.t("install-title")).clicked() {
-                start_install(app);
+                if let Some(release) = release.clone() {
+                    start_install(app, release);
+                }
             }
         });
 
@@ -488,23 +495,151 @@ pub fn destination(app: &mut App, ui: &mut egui::Ui) {
             app.request_measure();
         }
     });
+}
 
-    if stored.is_none() {
-        ui.add_space(6.0);
-        theme::help(ui, &app.t("err-no-release"));
+/// What the install will apply: a zip the user picked, a release on GitHub
+/// newer than anything downloaded, or the newest one already in the store.
+///
+/// On the stable channel a beta that happens to be in the store is not
+/// offered, so the channel shown is the channel installed.
+fn release_to_install(app: &App) -> Option<InstallRelease> {
+    if let Some(file) = &app.install_file {
+        return Some(InstallRelease::File(file.clone()));
+    }
+
+    let channel = app.settings.channel;
+    let stored = app.store.list(Product::Recof).ok().and_then(|list| {
+        list.into_iter()
+            .rfind(|stored| channel == Channel::Beta || stored.manifest.channel == Channel::Stable)
+    });
+
+    match (&app.updates.recof, stored) {
+        (Some(available), Some(stored)) if available.version <= stored.version => {
+            Some(InstallRelease::Stored(Box::new(stored)))
+        }
+        (Some(available), _) => Some(InstallRelease::Download(Box::new(available.clone()))),
+        (None, Some(stored)) => Some(InstallRelease::Stored(Box::new(stored))),
+        (None, None) => None,
     }
 }
 
-fn start_install(app: &mut App) {
-    let (Some(source), Some(release), Some(measured)) =
-        (app.game_path(), app.newest_stored(), app.measured_size())
-    else {
+/// Which release goes in, from which channel, and its notes.
+fn release_card(app: &mut App, ui: &mut egui::Ui) {
+    // The install needs to know what is published, whatever the setting
+    // about checking on start says.
+    if !app.update_check_requested {
+        updates::check_now(app);
+    }
+
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("install-release-title")).strong());
+        ui.add_space(4.0);
+
+        let stable_label = app.t("channel-stable");
+        let beta_label = app.t("channel-beta");
+        let mut channel = app.settings.channel;
+        ui.horizontal(|ui| {
+            ui.label(app.t("channel-title"));
+            ui.radio_value(&mut channel, Channel::Stable, stable_label);
+            ui.radio_value(&mut channel, Channel::Beta, beta_label);
+        });
+        if channel != app.settings.channel {
+            app.settings.channel = channel;
+            app.save_settings();
+            app.updates = UpdateCheck::default();
+            updates::check_now(app);
+        }
+        if channel == Channel::Beta {
+            theme::help(ui, &app.t("channel-beta-help"));
+        }
+
+        ui.add_space(6.0);
+        match release_to_install(app) {
+            Some(InstallRelease::File(path)) => {
+                let name = path
+                    .file_name()
+                    .map(|name| name.to_string_lossy().into_owned())
+                    .unwrap_or_default();
+                ui.label(
+                    egui::RichText::new(app.t_args("install-release-file", &[("name", name)]))
+                        .strong(),
+                );
+                theme::help(ui, &app.t("install-release-file-help"));
+                if ui.button(app.t("install-release-file-clear")).clicked() {
+                    app.install_file = None;
+                }
+            }
+            Some(InstallRelease::Download(available)) => {
+                ui.label(
+                    egui::RichText::new(app.t_args(
+                        "install-release-version",
+                        &[("version", available.version.to_string())],
+                    ))
+                    .strong(),
+                );
+                theme::help(ui, &app.t("install-release-download"));
+                updates::changelog(app, ui, &available.changelog);
+            }
+            Some(InstallRelease::Stored(stored)) => {
+                ui.label(
+                    egui::RichText::new(app.t_args(
+                        "install-release-version",
+                        &[("version", stored.version.to_string())],
+                    ))
+                    .strong(),
+                );
+                theme::help(ui, &app.t("install-release-stored"));
+            }
+            None if app.update_checking => {
+                ui.horizontal(|ui| {
+                    ui.spinner();
+                    theme::help(ui, &app.t("install-release-checking"));
+                });
+            }
+            None => {
+                let message = if app.updates.offline {
+                    "install-release-offline"
+                } else if channel == Channel::Stable {
+                    "install-release-try-beta"
+                } else {
+                    "err-no-release"
+                };
+                theme::help(ui, &app.t(message));
+                if ui.button(app.t("button-retry")).clicked() {
+                    updates::check_now(app);
+                }
+            }
+        }
+
+        if app.install_file.is_none() {
+            ui.add_space(6.0);
+            if ui.button(app.t("update-from-file")).clicked() {
+                if let Some(file) = rfd::FileDialog::new()
+                    .set_title(app.t("update-from-file"))
+                    .add_filter("zip", &["zip"])
+                    .pick_file()
+                {
+                    app.install_file = Some(file);
+                }
+            }
+            theme::help(ui, &app.t("update-from-file-help"));
+        }
+    });
+}
+
+fn start_install(app: &mut App, release: InstallRelease) {
+    let (Some(source), Some(measured)) = (app.game_path(), app.measured_size()) else {
         return;
     };
 
     let id = format!("install-{}", app.settings.channel.as_str());
+    let headline = match release {
+        InstallRelease::Stored(_) => app.t("install-copying-counted"),
+        InstallRelease::Download(_) | InstallRelease::File(_) => app.t("update-verifying"),
+    };
     app.progress = Some(Progress {
-        headline: app.t("install-copying-counted"),
+        headline,
         ..Default::default()
     });
     app.screen = Screen::Installing;
@@ -519,7 +654,8 @@ fn start_install(app: &mut App) {
         source_buildid: app.game_buildid(),
         destination: PathBuf::from(app.destination.trim()),
         measured,
-        release: Box::new(release),
+        release,
+        app_data: app.paths.root().to_path_buf(),
         now: crate::now_rfc3339(),
         id,
     });

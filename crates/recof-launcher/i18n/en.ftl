@@ -107,6 +107,16 @@ install-cancel-confirm = Stop the install? Everything copied so far will be remo
 install-cancelled = The install was cancelled and nothing was left behind.
 install-offer-import = Bring your saves, settings and unlocks over from the Steam copy
 install-offer-shortcuts = Create a desktop shortcut
+install-release-title = What gets installed
+install-release-version = ReCoF { $version }
+install-release-download = It is downloaded from GitHub and checked against its signature before anything is copied.
+install-release-stored = Already downloaded and checked.
+install-release-file = From { $name }
+install-release-file-help = The signed manifest next to the zip is checked before anything is copied.
+install-release-file-clear = Use a published release instead
+install-release-checking = Looking for the latest release
+install-release-offline = Could not reach GitHub. Try again, or install from a file.
+install-release-try-beta = Nothing has been published on the stable channel yet. Testers can switch to beta.
 
 ## The main screen
 
@@ -146,6 +156,7 @@ launch-preview = Command line
 launch-cvars-title = ReCoF options
 launch-cvars-none = This version of ReCoF ships no options of its own.
 launch-cvars-from-release = These come from the version of ReCoF you have installed.
+launch-cvars-defaults = Back to the defaults
 
 ## Updates
 
@@ -167,6 +178,11 @@ update-launcher-title = Launcher update
 update-launcher-restart = The launcher will restart to finish updating.
 update-from-file = Install from a file
 update-from-file-help = Choose a release zip. Its signed manifest must be next to it.
+changelog-note = Note
+changelog-tip = Tip
+changelog-important = Important
+changelog-warning = Warning
+changelog-caution = Caution
 
 channel-title = Release channel
 channel-stable = Stable
@@ -297,3 +313,4 @@ err-network = GitHub could not be reached. Check your connection and try again.
 err-github = GitHub answered with an error: { $detail }
 err-rate-limited = GitHub is rate limiting this connection. Try again in a few minutes.
 err-no-release = No release has been published on this channel yet.
+err-command-line-too-long = The command line would be { $length } characters long, and the game takes at most { $limit }. Shorten the extra arguments.

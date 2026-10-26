@@ -85,14 +85,6 @@ impl Release {
             .find(|asset| asset.name.eq_ignore_ascii_case(name))
     }
 
-    /// The first asset whose name ends with a suffix, for finding the zip
-    /// and the manifest without knowing the version in advance.
-    pub fn asset_ending_with(&self, suffix: &str) -> Option<&Asset> {
-        self.assets
-            .iter()
-            .find(|asset| asset.name.to_lowercase().ends_with(&suffix.to_lowercase()))
-    }
-
     /// Whether this release belongs to a channel.
     pub fn is_in(&self, channel: Channel) -> bool {
         if self.draft {
@@ -409,8 +401,6 @@ mod tests {
 
         // An asset with no digest is normal for an older release.
         assert_eq!(release.asset("recof-manifest.json").unwrap().digest, None);
-        assert!(release.asset_ending_with(".zip").is_some());
-        assert!(release.asset_ending_with(".sig").is_none());
     }
 
     #[test]

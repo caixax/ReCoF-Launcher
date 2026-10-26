@@ -4,6 +4,7 @@
 
 mod app;
 mod i18n;
+mod markdown;
 mod screens;
 mod theme;
 mod worker;

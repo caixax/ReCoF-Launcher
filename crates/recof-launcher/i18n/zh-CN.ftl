@@ -108,6 +108,16 @@ install-cancel-confirm = 要停止安装吗？目前已复制的内容都会被�
 install-cancelled = 安装已取消，没有留下任何半成品。
 install-offer-import = 从 Steam 副本带来我的存档、设置和解锁内容
 install-offer-shortcuts = 在桌面创建快捷方式
+install-release-title = 将要安装的内容
+install-release-version = ReCoF { $version }
+install-release-download = 从 GitHub 下载，并在复制任何文件之前校验其签名。
+install-release-stored = 已下载并校验。
+install-release-file = 来自 { $name }
+install-release-file-help = 复制任何文件之前，会先校验 zip 旁边的签名清单。
+install-release-file-clear = 改用已发布的版本
+install-release-checking = 正在查找最新版本
+install-release-offline = 无法连接 GitHub。请重试，或从文件安装。
+install-release-try-beta = 稳定通道上还没有发布任何内容。测试者可以切换到测试版通道。
 
 ## 主界面
 
@@ -147,6 +157,7 @@ launch-preview = 命令行
 launch-cvars-title = ReCoF 选项
 launch-cvars-none = 这个版本的 ReCoF 没有自己的选项。
 launch-cvars-from-release = 它们来自你已安装的 ReCoF 版本。
+launch-cvars-defaults = 恢复默认值
 
 ## 更新
 
@@ -168,6 +179,11 @@ update-launcher-title = 启动程序更新
 update-launcher-restart = 启动程序将重启以完成更新。
 update-from-file = 从文件安装
 update-from-file-help = 选择一个发行版 zip 包。它的签名清单必须放在同一目录。
+changelog-note = 注意
+changelog-tip = 提示
+changelog-important = 重要
+changelog-warning = 警告
+changelog-caution = 小心
 
 channel-title = 发行通道
 channel-stable = 稳定版
@@ -298,3 +314,4 @@ err-network = 无法连接 GitHub。请检查网络后重试。
 err-github = GitHub 返回了错误：{ $detail }
 err-rate-limited = GitHub 正在限制此连接的请求频率。请过几分钟再试。
 err-no-release = 这个通道上还没有发布任何版本。
+err-command-line-too-long = 命令行将有 { $length } 个字符，而游戏最多只接受 { $limit } 个。请缩短额外参数。

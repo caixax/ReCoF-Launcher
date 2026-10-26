@@ -55,18 +55,47 @@ cargo xtask pack-recof \
 
 The tool:
 
-- refuses to pack `CoFLaunchApp.exe`, which embeds art and sound taken out of the retail executable, or any of Valve's redistributables;
+- refuses to pack any of Valve's redistributables;
 - notices files that are byte identical, records the second one as a copy of the first, and leaves it out of the archive, which is how `sw.dll` rides along with `hw.dll` for free;
 - picks up `recof-cvars.json` if the folder has one, so the launcher can build the ReCoF options screen from it;
 - checks the manifest it just wrote against the same rules the launcher applies, so a release that would be refused is caught here instead.
 
-Upload all three files from `dist/` to a GitHub release on `caixax/ReCoF`, with the tag `v0.3.0`. The release body becomes the changelog the launcher shows before updating.
+Upload all three files from `dist/` to a GitHub release on `caixax/ReCoF`, with the tag `v0.3.0`. Other files may sit next to them, such as a zip for installing by hand: the launcher downloads the archive the manifest names and nothing else.
 
-For a beta, pass `--channel beta`, tag it `v0.4.0-beta.1`, and mark the GitHub release as a prerelease. The stable channel reads `releases/latest`, which GitHub already filters to skip prereleases, so a beta is invisible to it.
+The release body becomes the notes the launcher shows before a first install and before an update. It is drawn the way GitHub draws it: headings, lists, bold, inline code, links, tables, fenced code and alert blocks such as `> [!WARNING]`. Anything else shows as plain text. Warnings a player needs before installing, such as tools that do not work with this build, belong there.
+
+For a beta, pass `--channel beta` and mark the GitHub release as a prerelease. The tag needs no `-beta` suffix (`v0.4.0-beta.1` and `v0.1.0` both work): the prerelease mark is what keeps a release off the stable channel, which reads `releases/latest`, and GitHub leaves prereleases out of that.
 
 ### `--min-launcher`
 
 Set this when a release needs something the current launcher cannot do, for example a new manifest field. A launcher older than this refuses to install it and tells the user to update the launcher first. Leave it at the oldest launcher that works, so updating ReCoF does not force a launcher update for no reason.
+
+### The options file
+
+`recof-cvars.json` describes what the launcher's ReCoF options screen shows. The launcher has no list of its own, so a release that adds an option works with a launcher that predates it.
+
+```json
+{
+  "schema": 1,
+  "cvars": [
+    { "name": "rc_rawinput", "type": "bool", "default": "1", "group": "Input",
+      "label_en": "Raw mouse input", "desc_en": "Reads the mouse directly." },
+    { "name": "rc_prof", "type": "int", "default": "0", "min": 0, "max": 2,
+      "group": "Performance", "label_en": "Frame profiler" },
+    { "name": "rc_speedometer_pos", "type": "text", "default": ".5 .9",
+      "group": "HUD", "label_en": "Speedometer position" },
+    { "name": "condebug", "type": "flag", "default": "0", "group": "Testing",
+      "label_en": "Console log", "desc_en": "Writes the console to cryoffear/qconsole.log." }
+  ]
+}
+```
+
+- `type` is `bool` (passed as `+name 1` or `+name 0`), `int` or `float` (with optional `min` and `max`), `text`, or `flag`. A flag is a launch option rather than a console variable: it is passed as `-name` when on and left out when off, so its `name` has no dash.
+- A value may hold ASCII letters, digits, spaces, dots and underscores, and nothing else. The engine splits its command line at every `+` and `-`, drops bytes outside printable ASCII, and its console parser ends a token at other punctuation, so a value with any of those would not arrive whole. That rules out negative numbers. Spaces are fine: the value is passed quoted, and the engine keeps the quotes for its console.
+- A value the user chose in the launcher is always passed, even at its default: the game saves many options in `config.cfg`, and leaving one out would keep whatever the console set last. An option the user never touched is not passed, and the launcher shows the value from the copy's `config.cfg` for it when there is one. A flag is passed whenever it is on, including when it is on by default.
+- The engine runs the command line (`stuffcmds` at the end of `valve.rc`) before it runs `config.cfg`, so a saved option would undo the value it was started with. Before starting the game the launcher therefore also writes each chosen value into the line of `cryoffear/config.cfg` that already names it, leaving every other byte as it was. An option the file does not name yet only needs the command line. Nothing in the options file says which options are saved: whatever `config.cfg` holds is what gets written.
+- `key` is optional: a Fluent message id the launcher uses for the label, and its `desc` attribute for the description, when it has that translation. Otherwise `label_en` and `desc_en` are shown. Commands meant for binds, such as `+rc_ducktap`, do not belong in the file.
+- The whole command line, the path of `cof.exe` included, has to stay within 1000 bytes. The engine copies it into a 1024 byte buffer without checking the length, so the launcher refuses to start the game past that and says why.
 
 ## Releasing the launcher
 
@@ -89,9 +118,17 @@ cargo xtask pack-launcher \
 
 ## Testing a release before publishing it
 
-The launcher installs from a local file, through exactly the same verification: Maintenance, then "Install from a file". Put the archive, `recof-manifest.json` and `recof-manifest.json.sig` in one folder and pick the archive. A local file is not trusted more than a downloaded one, so this tests the real path.
+The launcher installs from a local file, through exactly the same verification: "Install from a file" on the install screen for a first install, or Maintenance, then "Install from a file" for a copy that exists. Put the archive, `recof-manifest.json` and `recof-manifest.json.sig` in one folder and pick the archive. A local file is not trusted more than a downloaded one, so this tests the real path.
 
 This is also how testers work while the repository is private: a private repository's releases are only visible to people with read access, so the launcher cannot fetch them.
+
+Once a release is published, run the whole path against it with the real game on the machine:
+
+```sh
+cargo xtask smoke --dest "D:/recof-smoke/Cry of Fear ReCoF"
+```
+
+It finds the game, asks GitHub for the newest release on the beta channel (`--channel stable` for the other one), reads its notes, downloads and verifies it, copies the game and applies the release, verifies the copy, damages two files and repairs them, builds the command line with every option set, and uninstalls. It lists and hashes the Steam install before and after, and fails if anything in it changed. `--keep` leaves the copy in place to play. It is the launcher's own code without the window, so a failure here is a failure a player would hit.
 
 ## Checking a real install
 
@@ -113,4 +150,5 @@ It prints each in scope file with its size and SHA-256 and says whether it still
 - [ ] The release notes say what changed, in plain language.
 - [ ] `--min-launcher` is right.
 - [ ] All three files are attached to the GitHub release.
+- [ ] `cargo xtask smoke --dest <folder>` passes against the published release.
 - [ ] The launcher on a clean machine finds the update, shows the changelog, and installs it.

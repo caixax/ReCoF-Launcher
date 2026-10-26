@@ -29,13 +29,13 @@ const KEY_ENV: &str = "RECOF_LAUNCHER_SIGNING_KEY";
 /// Name of the launcher executable inside its release archive.
 const LAUNCHER_EXE: &str = "ReCoF-Launcher.exe";
 
-/// Files a release must never contain, whatever is in the folder.
+/// Files a release must never contain, whatever is in the folder: Valve's
+/// redistributables, which are not ours to ship.
 ///
-/// `CoFLaunchApp.exe` embeds art and sound taken out of the retail
-/// executable, so a public release can never carry it. The rest are
-/// Valve's redistributables, which are not ours to ship.
+/// The rebuilt `CoFLaunchApp.exe` is allowed. It carries the images and
+/// sounds of the retail settings dialog, and shipping it is the project
+/// owner's decision.
 const NEVER_SHIP: &[&str] = &[
-    "coflaunchapp.exe",
     "steam_api.dll",
     "steam_api_c.dll",
     "steamclient.dll",
@@ -226,9 +226,8 @@ fn refuse_what_must_not_ship(files: &[Entry]) -> Result<(), String> {
             .to_lowercase();
         if NEVER_SHIP.contains(&name.as_str()) {
             return Err(format!(
-                "{} must never be in a release. CoFLaunchApp.exe embeds retail \
-                 art and sound, and the rest belong to Valve. Remove it from \
-                 the folder and pack again.",
+                "{} must never be in a release: it belongs to Valve. Remove it \
+                 from the folder and pack again.",
                 entry.relative
             ));
         }
@@ -494,7 +493,7 @@ fn base64_decode(text: &str) -> Option<Vec<u8>> {
 }
 
 /// A timestamp for the manifest, in UTC.
-fn now_rfc3339() -> String {
+pub(crate) fn now_rfc3339() -> String {
     let seconds = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map(|elapsed| elapsed.as_secs() as i64)
@@ -579,14 +578,12 @@ mod tests {
     }
 
     #[test]
-    fn a_release_carrying_the_settings_dialog_is_refused() {
+    fn the_rebuilt_settings_dialog_may_ship() {
         let files = vec![
             entry("hw.dll", b"engine"),
-            entry("CoFLaunchApp.exe", b"retail art and sound"),
+            entry("CoFLaunchApp.exe", b"rebuilt settings dialog"),
         ];
-        let outcome = refuse_what_must_not_ship(&files);
-        assert!(outcome.is_err(), "{outcome:?}");
-        assert!(outcome.unwrap_err().contains("CoFLaunchApp.exe"));
+        assert!(refuse_what_must_not_ship(&files).is_ok());
     }
 
     #[test]

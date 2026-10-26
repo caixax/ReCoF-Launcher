@@ -109,6 +109,16 @@ install-cancel-confirm = Kurulum durdurulsun mu? Şimdiye kadar kopyalanan her �
 install-cancelled = Kurulum iptal edildi ve geride hiçbir şey kalmadı.
 install-offer-import = Kayıtlarımı, ayarlarımı ve açtıklarımı Steam kopyasından getir
 install-offer-shortcuts = Masaüstünde kısayol oluştur
+install-release-title = Ne kurulacak
+install-release-version = ReCoF { $version }
+install-release-download = GitHub'dan indirilir ve herhangi bir şey kopyalanmadan önce imzasıyla doğrulanır.
+install-release-stored = Zaten indirildi ve doğrulandı.
+install-release-file = Kaynak: { $name }
+install-release-file-help = Zip dosyasının yanındaki imzalı manifest, herhangi bir şey kopyalanmadan önce doğrulanır.
+install-release-file-clear = Bunun yerine yayımlanmış bir sürüm kullan
+install-release-checking = En son sürüm aranıyor
+install-release-offline = GitHub'a ulaşılamadı. Yeniden deneyin veya bir dosyadan kurun.
+install-release-try-beta = Kararlı kanalda henüz bir şey yayımlanmadı. Test edenler betaya geçebilir.
 
 ## Ana ekran
 
@@ -148,6 +158,7 @@ launch-preview = Komut satırı
 launch-cvars-title = ReCoF seçenekleri
 launch-cvars-none = ReCoF'un bu sürümü kendine ait seçenek getirmiyor.
 launch-cvars-from-release = Kurulu olan ReCoF sürümünden gelirler.
+launch-cvars-defaults = Varsayılanlara dön
 
 ## Güncellemeler
 
@@ -169,6 +180,11 @@ update-launcher-title = Araç güncellemesi
 update-launcher-restart = Güncellemeyi bitirmek için araç yeniden başlayacak.
 update-from-file = Bir dosyadan kur
 update-from-file-help = Bir sürüm zip dosyası seçin. İmzalı manifest dosyası yanında olmalı.
+changelog-note = Not
+changelog-tip = İpucu
+changelog-important = Önemli
+changelog-warning = Uyarı
+changelog-caution = Dikkat
 
 channel-title = Yayın kanalı
 channel-stable = Kararlı
@@ -299,3 +315,4 @@ err-network = GitHub'a ulaşılamadı. Bağlantınızı denetleyip yeniden deney
 err-github = GitHub bir hatayla yanıt verdi: { $detail }
 err-rate-limited = GitHub bu bağlantının isteklerini kısıtlıyor. Birkaç dakika sonra yeniden deneyin.
 err-no-release = Bu kanalda henüz hiçbir sürüm yayımlanmadı.
+err-command-line-too-long = Komut satırı { $length } karakter olurdu, oyun en fazla { $limit } karakter kabul ediyor. Ek bağımsız değişkenleri kısaltın.

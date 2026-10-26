@@ -109,6 +109,16 @@ install-cancel-confirm = Przerwać instalację? Wszystko, co dotąd skopiowano, 
 install-cancelled = Instalacja została przerwana i nic po niej nie zostało.
 install-offer-import = Przenieś moje zapisy, ustawienia i odblokowane rzeczy z kopii ze Steama
 install-offer-shortcuts = Utwórz skrót na pulpicie
+install-release-title = Co zostanie zainstalowane
+install-release-version = ReCoF { $version }
+install-release-download = Zostanie pobrane z GitHuba i sprawdzone podpisem, zanim cokolwiek zostanie skopiowane.
+install-release-stored = Już pobrane i sprawdzone.
+install-release-file = Z pliku { $name }
+install-release-file-help = Podpisany manifest obok pliku zip jest sprawdzany, zanim cokolwiek zostanie skopiowane.
+install-release-file-clear = Użyj zamiast tego opublikowanej wersji
+install-release-checking = Szukanie najnowszej wersji
+install-release-offline = Nie można połączyć się z GitHubem. Spróbuj ponownie lub zainstaluj z pliku.
+install-release-try-beta = Na kanale stabilnym nic jeszcze nie opublikowano. Testerzy mogą przełączyć się na betę.
 
 ## Ekran główny
 
@@ -148,6 +158,7 @@ launch-preview = Wiersz poleceń
 launch-cvars-title = Opcje ReCoF
 launch-cvars-none = Ta wersja ReCoF nie ma własnych opcji.
 launch-cvars-from-release = Pochodzą z zainstalowanej wersji ReCoF.
+launch-cvars-defaults = Przywróć wartości domyślne
 
 ## Aktualizacje
 
@@ -169,6 +180,11 @@ update-launcher-title = Aktualizacja programu
 update-launcher-restart = Program uruchomi się ponownie, żeby dokończyć aktualizację.
 update-from-file = Zainstaluj z pliku
 update-from-file-help = Wskaż archiwum zip wydania. Podpisany manifest musi leżeć obok.
+changelog-note = Uwaga
+changelog-tip = Wskazówka
+changelog-important = Ważne
+changelog-warning = Ostrzeżenie
+changelog-caution = Ostrożnie
 
 channel-title = Kanał wydań
 channel-stable = Stabilny
@@ -299,3 +315,4 @@ err-network = Nie udało się połączyć z GitHubem. Sprawdź połączenie i sp
 err-github = GitHub odpowiedział błędem: { $detail }
 err-rate-limited = GitHub ogranicza liczbę zapytań z tego połączenia. Spróbuj za kilka minut.
 err-no-release = Na tym kanale nie opublikowano jeszcze żadnego wydania.
+err-command-line-too-long = Wiersz poleceń miałby { $length } znaków, a gra przyjmuje najwyżej { $limit }. Skróć dodatkowe argumenty.

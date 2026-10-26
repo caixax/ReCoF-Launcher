@@ -130,9 +130,6 @@ pub fn fetch(
     let signature_asset = release
         .asset(&signature_file)
         .ok_or_else(|| Error::MissingAsset(signature_file.clone()))?;
-    let archive_asset = release
-        .asset_ending_with(".zip")
-        .ok_or_else(|| Error::MissingAsset("the release archive".to_owned()))?;
 
     let manifest_bytes = fetch_small(
         &manifest_asset.browser_download_url,
@@ -154,6 +151,7 @@ pub fn fetch(
         return Ok(None);
     };
 
+    let archive_asset = archive_asset(release, &manifest_bytes)?;
     let outcome = net::download(
         &archive_asset.browser_download_url,
         directory,
@@ -175,6 +173,31 @@ pub fn fetch(
         signature_bytes,
         asset_digest: archive_asset.digest.clone(),
     }))
+}
+
+/// The archive the manifest names, among the assets of the release.
+///
+/// A release may carry more than one zip, such as a full set for
+/// installing by hand next to the one the launcher uses, so the archive is
+/// found by the name the manifest gives and not by its extension. The
+/// manifest is not verified yet at this point, and it does not need to
+/// be: the archive is checked against the signed manifest before use.
+fn archive_asset<'a>(release: &'a Release, manifest_bytes: &[u8]) -> Result<&'a net::Asset> {
+    #[derive(serde::Deserialize)]
+    struct Named {
+        archive: NamedArchive,
+    }
+    #[derive(serde::Deserialize)]
+    struct NamedArchive {
+        name: String,
+    }
+
+    let named: Named = serde_json::from_slice(manifest_bytes).map_err(|error| {
+        Error::Verify(manifest::VerifyError::MalformedManifest(error.to_string()))
+    })?;
+    release
+        .asset(&named.archive.name)
+        .ok_or(Error::MissingAsset(named.archive.name))
 }
 
 /// Downloads a small file and returns its bytes.
@@ -385,6 +408,37 @@ mod tests {
         let mut newer = base;
         newer.installed = Some(Version::parse("0.2.0").unwrap());
         assert!(newer.is_newer());
+    }
+
+    #[test]
+    fn the_archive_is_the_one_the_manifest_names_whatever_else_is_attached() {
+        // v0.1.0 of ReCoF carries a full zip for installing by hand next to
+        // the launcher's own, and either may be listed first.
+        let mut both = release("v0.3.0");
+        both.assets.insert(
+            0,
+            Asset {
+                name: "ReCoF-v0.3.0.zip".to_owned(),
+                size: 20,
+                browser_download_url: "https://example.invalid/full.zip".to_owned(),
+                digest: None,
+            },
+        );
+
+        let manifest = br#"{ "archive": { "name": "recof-0.3.0.zip" } }"#;
+        let chosen = archive_asset(&both, manifest).unwrap();
+        assert_eq!(chosen.name, "recof-0.3.0.zip");
+
+        let missing = br#"{ "archive": { "name": "recof-9.9.9.zip" } }"#;
+        assert!(matches!(
+            archive_asset(&both, missing),
+            Err(Error::MissingAsset(name)) if name == "recof-9.9.9.zip"
+        ));
+
+        assert!(matches!(
+            archive_asset(&both, b"not json"),
+            Err(Error::Verify(_))
+        ));
     }
 
     #[test]

@@ -109,6 +109,16 @@ install-cancel-confirm = Fermare l'installazione? Verrà rimosso tutto quello ch
 install-cancelled = L'installazione è stata annullata e non ha lasciato nulla a metà.
 install-offer-import = Portare salvataggi, impostazioni e sblocchi dalla copia Steam
 install-offer-shortcuts = Creare un collegamento sul desktop
+install-release-title = Cosa viene installato
+install-release-version = ReCoF { $version }
+install-release-download = Viene scaricato da GitHub e verificato con la sua firma prima di copiare qualsiasi cosa.
+install-release-stored = Già scaricato e verificato.
+install-release-file = Da { $name }
+install-release-file-help = Il manifesto firmato accanto allo zip viene verificato prima di copiare qualsiasi cosa.
+install-release-file-clear = Usa invece una versione pubblicata
+install-release-checking = Ricerca dell'ultima versione
+install-release-offline = Impossibile raggiungere GitHub. Riprova o installa da un file.
+install-release-try-beta = Sul canale stabile non è ancora stato pubblicato nulla. I tester possono passare alla beta.
 
 ## La schermata principale
 
@@ -148,6 +158,7 @@ launch-preview = Riga di comando
 launch-cvars-title = Opzioni di ReCoF
 launch-cvars-none = Questa versione di ReCoF non porta opzioni proprie.
 launch-cvars-from-release = Arrivano dalla versione di ReCoF che hai installato.
+launch-cvars-defaults = Ripristina i valori predefiniti
 
 ## Aggiornamenti
 
@@ -169,6 +180,11 @@ update-launcher-title = Aggiornamento dell'avviatore
 update-launcher-restart = L'avviatore si riavvierà per completare l'aggiornamento.
 update-from-file = Installa da un file
 update-from-file-help = Scegli un archivio zip di una versione. Il suo manifesto firmato deve stare accanto.
+changelog-note = Nota
+changelog-tip = Suggerimento
+changelog-important = Importante
+changelog-warning = Avviso
+changelog-caution = Attenzione
 
 channel-title = Canale delle versioni
 channel-stable = Stabile
@@ -299,3 +315,4 @@ err-network = Non è stato possibile raggiungere GitHub. Controlla la connession
 err-github = GitHub ha risposto con un errore: { $detail }
 err-rate-limited = GitHub sta limitando le richieste di questa connessione. Riprova tra qualche minuto.
 err-no-release = Su questo canale non è ancora stata pubblicata nessuna versione.
+err-command-line-too-long = La riga di comando sarebbe lunga { $length } caratteri e il gioco ne accetta al massimo { $limit }. Accorcia gli argomenti aggiuntivi.

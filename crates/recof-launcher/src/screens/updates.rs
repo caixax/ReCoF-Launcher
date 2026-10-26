@@ -19,7 +19,14 @@ pub fn check_once(app: &mut App) {
     if app.update_check_requested || !app.settings.check_updates_on_start {
         return;
     }
+    check_now(app);
+}
+
+/// Asks for a check whatever the setting says, for when the user asked
+/// for one, such as by changing the channel on the install screen.
+pub fn check_now(app: &mut App) {
     app.update_check_requested = true;
+    app.update_checking = true;
     app.worker.send_background(Job::CheckUpdates {
         app_data: app.paths.root().to_path_buf(),
         channel: app.settings.channel,
@@ -164,7 +171,9 @@ pub fn banner(app: &mut App, ui: &mut egui::Ui) {
     });
 }
 
-fn changelog(app: &App, ui: &mut egui::Ui, body: &str) {
+/// The release notes, drawn the way GitHub shows them, in a box that
+/// scrolls so a long changelog does not push the buttons off screen.
+pub fn changelog(app: &App, ui: &mut egui::Ui, body: &str) {
     ui.add_space(6.0);
     ui.label(egui::RichText::new(app.t("update-changelog")).strong());
     if body.trim().is_empty() {
@@ -172,11 +181,11 @@ fn changelog(app: &App, ui: &mut egui::Ui, body: &str) {
         return;
     }
     egui::ScrollArea::vertical()
-        .max_height(160.0)
+        .max_height(220.0)
         .id_salt("changelog")
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
-            ui.label(egui::RichText::new(body).size(13.0).color(theme::TEXT_DIM));
+            crate::markdown::show(app, ui, body);
         });
 }
 

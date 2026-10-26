@@ -24,17 +24,28 @@
 use crate::consts::BASE_LAUNCH_ARGS;
 use crate::settings::LaunchSettings;
 
-/// A cvar the release told the launcher about, with the value to pass.
+/// Longest command line the game is given, the path of `cof.exe` included.
+///
+/// The engine copies its whole command line into a 1024 byte buffer
+/// without checking the length, so anything longer would overrun it. The
+/// limit leaves room for the quotes Windows adds around the path.
+pub const MAX_COMMAND_LINE: usize = 1000;
+
+/// An option the release told the launcher about, ready to pass.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CvarArg {
-    pub name: String,
-    pub value: String,
+pub enum CvarArg {
+    /// A console variable, passed as `+name value`.
+    Set { name: String, value: String },
+    /// A launch option, passed as `-name`.
+    Flag { name: String },
 }
 
 /// Builds the full argument list.
 ///
-/// `cvars` are passed as `+name value`, which is how the engine takes a
-/// console variable on the command line.
+/// Flags from the release come after the launcher's own options, then the
+/// console variables as `+name value`, which is how the engine takes one
+/// on the command line. A value with spaces stays one argument; Windows
+/// quotes it, and the engine keeps the quotes for its console parser.
 pub fn build(settings: &LaunchSettings, cvars: &[CvarArg]) -> Vec<String> {
     let mut args: Vec<String> = BASE_LAUNCH_ARGS
         .iter()
@@ -64,8 +75,15 @@ pub fn build(settings: &LaunchSettings, cvars: &[CvarArg]) -> Vec<String> {
     }
 
     for cvar in cvars {
-        args.push(format!("+{}", cvar.name));
-        args.push(cvar.value.clone());
+        if let CvarArg::Flag { name } = cvar {
+            args.push(format!("-{name}"));
+        }
+    }
+    for cvar in cvars {
+        if let CvarArg::Set { name, value } = cvar {
+            args.push(format!("+{name}"));
+            args.push(value.clone());
+        }
     }
 
     args.extend(split_extra(&settings.extra_args));
@@ -197,19 +215,40 @@ mod tests {
     #[test]
     fn cvars_are_passed_with_a_leading_plus_and_a_separate_value() {
         let cvars = [
-            CvarArg {
+            CvarArg::Set {
                 name: "rc_fov".to_owned(),
                 value: "100".to_owned(),
             },
-            CvarArg {
-                name: "rc_fix_flashlight".to_owned(),
-                value: "1".to_owned(),
+            CvarArg::Set {
+                name: "rc_speedometer_pos".to_owned(),
+                value: ".5 .9".to_owned(),
             },
         ];
         let args = build(&settings(), &cvars);
         let joined = args.join(" ");
         assert!(joined.contains("+rc_fov 100"), "{joined}");
-        assert!(joined.contains("+rc_fix_flashlight 1"), "{joined}");
+        assert!(
+            args.windows(2)
+                .any(|pair| pair == ["+rc_speedometer_pos", ".5 .9"]),
+            "a value with spaces stays one argument: {args:?}"
+        );
+    }
+
+    #[test]
+    fn flags_come_before_the_cvars_with_a_leading_dash() {
+        let cvars = [
+            CvarArg::Set {
+                name: "rc_rawinput".to_owned(),
+                value: "1".to_owned(),
+            },
+            CvarArg::Flag {
+                name: "condebug".to_owned(),
+            },
+        ];
+        let args = build(&settings(), &cvars);
+        let flag = args.iter().position(|arg| arg == "-condebug").unwrap();
+        let cvar = args.iter().position(|arg| arg == "+rc_rawinput").unwrap();
+        assert!(flag < cvar, "{args:?}");
     }
 
     #[test]

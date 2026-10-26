@@ -108,6 +108,16 @@ install-cancel-confirm = Остановить установку? Всё ско�
 install-cancelled = Установка отменена, ничего недоделанного не осталось.
 install-offer-import = Перенести мои сохранения, настройки и открытое содержимое из копии Steam
 install-offer-shortcuts = Создать ярлык на рабочем столе
+install-release-title = Что будет установлено
+install-release-version = ReCoF { $version }
+install-release-download = Загружается с GitHub и проверяется по подписи до того, как что-либо будет скопировано.
+install-release-stored = Уже загружено и проверено.
+install-release-file = Из { $name }
+install-release-file-help = Подписанный манифест рядом с zip проверяется до того, как что-либо будет скопировано.
+install-release-file-clear = Использовать опубликованную версию
+install-release-checking = Поиск последней версии
+install-release-offline = Не удалось связаться с GitHub. Попробуйте ещё раз или установите из файла.
+install-release-try-beta = В стабильном канале пока ничего не выпущено. Тестировщики могут переключиться на бету.
 
 ## Главный экран
 
@@ -147,6 +157,7 @@ launch-preview = Командная строка
 launch-cvars-title = Параметры ReCoF
 launch-cvars-none = В этой версии ReCoF нет собственных параметров.
 launch-cvars-from-release = Они приходят из установленной у вас версии ReCoF.
+launch-cvars-defaults = Вернуть значения по умолчанию
 
 ## Обновления
 
@@ -168,6 +179,11 @@ update-launcher-title = Обновление программы
 update-launcher-restart = Программа перезапустится, чтобы завершить обновление.
 update-from-file = Установить из файла
 update-from-file-help = Выберите zip-архив выпуска. Подписанный манифест должен лежать рядом.
+changelog-note = Примечание
+changelog-tip = Совет
+changelog-important = Важно
+changelog-warning = Предупреждение
+changelog-caution = Осторожно
 
 channel-title = Канал выпусков
 channel-stable = Стабильный
@@ -298,3 +314,4 @@ err-network = Связаться с GitHub не удалось. Проверьт
 err-github = GitHub ответил ошибкой: { $detail }
 err-rate-limited = GitHub ограничивает запросы с этого соединения. Попробуйте через несколько минут.
 err-no-release = В этом канале ещё ничего не выпущено.
+err-command-line-too-long = Командная строка была бы длиной { $length } символов, а игра принимает не больше { $limit }. Сократите дополнительные аргументы.

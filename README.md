@@ -25,7 +25,7 @@ This is a standalone MIT licensed project. It is not a replacement for `CoFLaunc
 
 1. The Steam installation is read only. The launcher never writes, deletes or renames anything inside it.
 2. The launcher writes in exactly two places: the ReCoF copy folder you chose, and `%LOCALAPPDATA%\ReCoF Launcher`. The one documented exception is `shortcuts.vdf`, for adding ReCoF to Steam as a non Steam game, which is opt in, requires Steam to be closed, and backs the file up first.
-3. No retail asset or binary is ever distributed or downloaded. The base game always comes from your own copy.
+3. No retail game file is ever distributed or downloaded. The base game always comes from your own copy, and a release carries only ReCoF's rebuilt binaries (the rebuilt `CoFLaunchApp.exe` includes the images and sounds of the retail settings dialog).
 4. Every download is verified by signature and hash before it is used. If any check fails, nothing is installed.
 5. No operation may leave a half finished installation.
 6. ReCoF is never installed inside the Steam folder or in `Program Files`.
