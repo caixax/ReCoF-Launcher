@@ -31,10 +31,10 @@ pub struct TrustedKey {
 /// `err-no-trusted-keys`, which is the right behaviour for a launcher
 /// with no key: install nothing rather than everything.
 pub const TRUSTED_KEYS: &[TrustedKey] = &[TrustedKey {
-    id: "recof-2026a",
+    id: "recof-2026b",
     bytes: [
-        80, 205, 35, 0, 10, 117, 83, 191, 7, 114, 90, 208, 9, 244, 202, 168, 94, 194, 140, 253,
-        240, 51, 157, 80, 226, 6, 154, 181, 252, 193, 210, 57,
+        235, 65, 176, 126, 132, 165, 122, 162, 70, 3, 38, 56, 170, 115, 111, 192, 32, 235, 229,
+        188, 250, 243, 66, 170, 115, 199, 232, 123, 64, 85, 122, 98,
     ],
     products: &[
         crate::manifest::Product::Recof,

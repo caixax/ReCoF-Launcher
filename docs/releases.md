@@ -19,17 +19,17 @@ The launcher trusts a list of public keys compiled into it, in [`crates/recof-co
 To create the key:
 
 ```sh
-cargo xtask keygen --id recof-2026a
+cargo xtask keygen --id recof-2026b
 ```
 
-That writes `keys/recof-2026a.secret.key` and `keys/recof-2026a.public.key` and prints the entry to paste into `keys.rs`. The `keys/` folder is in `.gitignore` and the private key must never be committed.
+That writes `keys/recof-2026b.secret.key` and `keys/recof-2026b.public.key` and prints the entry to paste into `keys.rs`. The `keys/` folder is in `.gitignore` and the private key must never be committed.
 
 Keep a copy of the private key somewhere safe and offline. Losing it does not break anything already installed, but every future release would need a new key, which means shipping a new launcher before anyone can update.
 
 Give CI the same key:
 
 ```sh
-gh secret set RECOF_LAUNCHER_SIGNING_KEY < keys/recof-2026a.secret.key
+gh secret set RECOF_LAUNCHER_SIGNING_KEY < keys/recof-2026b.secret.key
 ```
 
 ### Rotating it

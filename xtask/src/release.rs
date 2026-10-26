@@ -50,7 +50,7 @@ const NEVER_SHIP: &[&str] = &[
 
 /// Generates a signing key pair.
 pub fn keygen(args: &[String], root: &Path) -> Result<(), String> {
-    let id = value_of(args, "--id").unwrap_or_else(|| "recof-2026a".to_owned());
+    let id = value_of(args, "--id").unwrap_or_else(|| "recof-2026b".to_owned());
     let out = root.join(value_of(args, "--out").unwrap_or_else(|| KEYS_DIR.to_owned()));
 
     let mut seed = [0u8; 32];
@@ -404,7 +404,7 @@ fn pack(
 
 /// Loads the signing key, from a path, the environment or `keys/`.
 fn load_key(args: &[String], root: &Path) -> Result<(String, SigningKey), String> {
-    let id = value_of(args, "--key-id").unwrap_or_else(|| "recof-2026a".to_owned());
+    let id = value_of(args, "--key-id").unwrap_or_else(|| "recof-2026b".to_owned());
 
     let encoded = if let Some(path) = value_of(args, "--key") {
         std::fs::read_to_string(root.join(&path)).map_err(|error| format!("{path}: {error}"))?
