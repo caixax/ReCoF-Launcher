@@ -506,8 +506,14 @@ fn start_install(app: &mut App) {
         ..Default::default()
     });
     app.screen = Screen::Installing;
+    let import_from = if app.import_on_install {
+        app.game_path()
+    } else {
+        None
+    };
     app.worker.send(Job::Install {
         source,
+        import_from,
         source_buildid: app.game_buildid(),
         destination: PathBuf::from(app.destination.trim()),
         measured,

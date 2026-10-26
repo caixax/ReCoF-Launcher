@@ -3,3 +3,4 @@
 pub mod home;
 pub mod setup;
 pub mod tools;
+pub mod updates;

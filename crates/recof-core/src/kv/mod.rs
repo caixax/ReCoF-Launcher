@@ -9,6 +9,7 @@
 //! finding the game) and because the dialect Steam writes is small and well
 //! covered by the tests next to the code.
 
+pub mod binary;
 pub mod text;
 
 use std::fmt;

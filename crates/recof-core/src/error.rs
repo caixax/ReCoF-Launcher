@@ -44,6 +44,12 @@ pub enum Error {
 
     #[error("{0}")]
     Verify(#[from] crate::manifest::VerifyError),
+
+    #[error("{0}")]
+    Net(#[from] crate::net::NetError),
+
+    #[error("the release does not include {0}")]
+    MissingAsset(String),
 }
 
 impl Error {
@@ -66,6 +72,8 @@ impl Error {
             Error::Journal { .. } => "err-journal",
             Error::Interrupted { .. } => "err-interrupted",
             Error::Verify(inner) => inner.message_id(),
+            Error::Net(inner) => inner.message_id(),
+            Error::MissingAsset(_) => "err-bad-manifest",
         }
     }
 
@@ -79,7 +87,11 @@ impl Error {
             Error::NoGameExe(path) | Error::NoGameDir(path) => {
                 vec![("path", path.display().to_string())]
             }
-            Error::Journal { .. } | Error::Interrupted { .. } | Error::Verify(_) => Vec::new(),
+            Error::Net(inner) => inner.message_args(),
+            Error::Journal { .. }
+            | Error::Interrupted { .. }
+            | Error::Verify(_)
+            | Error::MissingAsset(_) => Vec::new(),
         }
     }
 }

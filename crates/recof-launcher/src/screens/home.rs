@@ -41,12 +41,16 @@ pub fn home(app: &mut App, ui: &mut egui::Ui) {
         }
     }
 
+    crate::screens::updates::status_line(app, ui);
+
     ui.add_space(14.0);
     play_buttons(app, ui);
 
     ui.add_space(14.0);
     egui::ScrollArea::vertical().show(ui, |ui| {
         ui.set_width(ui.available_width());
+        crate::screens::updates::restart_prompt(app, ui);
+        crate::screens::updates::banner(app, ui);
         launch_options(app, ui);
         ui.add_space(10.0);
         recof_options(app, ui);

@@ -1,12 +1,14 @@
 //! Settings, maintenance and the bug report.
 
+use recof_core::backup::BackupKind;
 use recof_core::install::{RepairReport, VerifyEntry};
 use recof_core::manifest::Channel;
+use recof_core::space::format_bytes;
 
 use crate::app::{App, Confirm, ConfirmAction, Notice, Progress, Screen};
 use crate::i18n::LANGUAGES;
 use crate::theme;
-use crate::worker::Job;
+use crate::worker::{Job, ShortcutKind};
 
 /// The verify report is kept here rather than on `App` so the rest of the
 /// application does not have to know about a maintenance detail.
@@ -220,6 +222,21 @@ pub fn maintenance(app: &mut App, ui: &mut egui::Ui) {
                 }
             }
         });
+
+        ui.add_space(10.0);
+        crate::screens::updates::from_file(app, ui);
+
+        ui.add_space(10.0);
+        crate::screens::updates::rollback(app, ui);
+
+        ui.add_space(10.0);
+        backups(app, ui, &install_root);
+
+        ui.add_space(10.0);
+        import(app, ui, &install_root);
+
+        ui.add_space(10.0);
+        shortcuts(app, ui, &install_root);
 
         ui.add_space(10.0);
         theme::card(ui, |ui| {
@@ -463,6 +480,241 @@ fn percent_encode(text: &str) -> String {
         }
     }
     encoded
+}
+
+/// Making and restoring save backups.
+fn backups(app: &mut App, ui: &mut egui::Ui, install_root: &std::path::Path) {
+    if !app.backups_listed && !app.worker.is_busy() {
+        app.backups_listed = true;
+        app.worker.send(Job::ListBackups {
+            app_data: app.paths.root().to_path_buf(),
+        });
+    }
+
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("backup-title")).strong());
+        theme::help(ui, &app.t("backup-what"));
+        ui.add_space(6.0);
+
+        ui.add_enabled_ui(!app.worker.is_busy(), |ui| {
+            if ui.button(app.t("backup-create")).clicked() {
+                app.progress = Some(Progress {
+                    headline: app.t("backup-create"),
+                    ..Default::default()
+                });
+                app.worker.send(Job::Backup {
+                    install_root: install_root.to_path_buf(),
+                    app_data: app.paths.root().to_path_buf(),
+                    kind: BackupKind::Manual,
+                    now: crate::now_rfc3339(),
+                    stamp: crate::now_stamp(),
+                    recof_version: app
+                        .installed
+                        .as_ref()
+                        .map(|state| state.version.to_string()),
+                });
+            }
+        });
+
+        ui.add_space(6.0);
+        if app.backups.is_empty() {
+            theme::help(ui, &app.t("backup-none"));
+            return;
+        }
+
+        let found = app.backups.clone();
+        for backup in &found {
+            ui.horizontal(|ui| {
+                ui.label(
+                    egui::RichText::new(app.t_args(
+                        "backup-list-entry",
+                        &[
+                            ("when", backup.manifest.created.clone()),
+                            ("size", format_bytes(backup.size)),
+                        ],
+                    ))
+                    .size(12.5),
+                );
+                ui.add_enabled_ui(!app.worker.is_busy(), |ui| {
+                    if ui.small_button(app.t("maintain-restore")).clicked() {
+                        app.progress = Some(Progress {
+                            headline: app.t("maintain-restore"),
+                            ..Default::default()
+                        });
+                        app.worker.send(Job::Restore {
+                            archive: backup.path.clone(),
+                            install_root: install_root.to_path_buf(),
+                        });
+                    }
+                });
+            });
+        }
+    });
+}
+
+/// Bringing progress over from the Steam copy.
+fn import(app: &mut App, ui: &mut egui::Ui, install_root: &std::path::Path) {
+    let vanilla = app
+        .settings
+        .vanilla_path
+        .clone()
+        .or_else(|| app.game_path());
+
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("import-title")).strong());
+        theme::help(ui, &app.t("import-explain"));
+        ui.add_space(6.0);
+
+        let Some(vanilla) = vanilla else {
+            theme::help(ui, &app.t("detect-not-found"));
+            return;
+        };
+
+        match app.import_plan.clone() {
+            None => {
+                ui.add_enabled_ui(!app.worker.is_busy(), |ui| {
+                    if ui.button(app.t("maintain-import")).clicked() {
+                        app.progress = Some(Progress {
+                            headline: app.t("import-title"),
+                            ..Default::default()
+                        });
+                        app.worker.send(Job::PlanImport {
+                            vanilla: vanilla.clone(),
+                            install_root: install_root.to_path_buf(),
+                        });
+                    }
+                });
+            }
+            Some(plan) => {
+                if plan.to_write() == 0 {
+                    theme::help(ui, &app.t("import-nothing-found"));
+                    if ui.button(app.t("button-close")).clicked() {
+                        app.import_plan = None;
+                    }
+                    return;
+                }
+
+                let overwrites = plan.overwrites().len();
+                if overwrites > 0 {
+                    ui.label(
+                        egui::RichText::new(app.t("import-overwrite-title"))
+                            .color(theme::WARN)
+                            .strong(),
+                    );
+                    ui.label(app.t_args(
+                        "import-overwrite-body",
+                        &[("count", overwrites.to_string())],
+                    ));
+                }
+                theme::help(
+                    ui,
+                    &app.t_args(
+                        "detect-size",
+                        &[
+                            ("files", plan.to_write().to_string()),
+                            ("size", format_bytes(plan.total_bytes())),
+                        ],
+                    ),
+                );
+
+                ui.add_space(6.0);
+                ui.horizontal(|ui| {
+                    ui.add_enabled_ui(!app.worker.is_busy(), |ui| {
+                        if ui.button(app.t("button-continue")).clicked() {
+                            app.progress = Some(Progress {
+                                headline: app.t("import-title"),
+                                ..Default::default()
+                            });
+                            app.worker.send(Job::Import {
+                                vanilla: vanilla.clone(),
+                                install_root: install_root.to_path_buf(),
+                                plan: Box::new(plan.clone()),
+                                app_data: app.paths.root().to_path_buf(),
+                                now: crate::now_rfc3339(),
+                                stamp: crate::now_stamp(),
+                            });
+                        }
+                    });
+                    if ui.button(app.t("button-cancel")).clicked() {
+                        app.import_plan = None;
+                    }
+                });
+            }
+        }
+    });
+}
+
+/// Desktop, start menu and the non Steam shortcut.
+fn shortcuts(app: &mut App, ui: &mut egui::Ui, install_root: &std::path::Path) {
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("maintain-shortcuts")).strong());
+        ui.add_space(6.0);
+
+        // The shortcut starts the game the same way the play button does.
+        let arguments = recof_core::launch::build(&app.settings.launch, &[]).join(" ");
+
+        ui.horizontal(|ui| {
+            if ui.button(app.t("shortcut-desktop")).clicked() {
+                app.worker.send(Job::MakeShortcut {
+                    kind: ShortcutKind::Desktop,
+                    install_root: install_root.to_path_buf(),
+                    arguments: arguments.clone(),
+                    name: "ReCoF".to_owned(),
+                });
+            }
+            if ui.button(app.t("shortcut-start-menu")).clicked() {
+                app.worker.send(Job::MakeShortcut {
+                    kind: ShortcutKind::StartMenu,
+                    install_root: install_root.to_path_buf(),
+                    arguments: arguments.clone(),
+                    name: "ReCoF".to_owned(),
+                });
+            }
+        });
+
+        ui.add_space(10.0);
+        ui.label(egui::RichText::new(app.t("shortcut-steam")).strong());
+        theme::help(ui, &app.t("shortcut-steam-help"));
+
+        let steam = app
+            .detection
+            .as_ref()
+            .and_then(|detection| detection.steam.as_ref())
+            .map(|layout| layout.steam_path.clone());
+        let Some(steam) = steam else {
+            theme::help(ui, &app.t("detect-not-found"));
+            return;
+        };
+
+        let users = recof_core::steam::shortcuts::users(&steam).unwrap_or_default();
+        if users.is_empty() {
+            theme::help(ui, &app.t("detect-not-found"));
+            return;
+        }
+
+        ui.add_space(4.0);
+        for user in &users {
+            ui.add_enabled_ui(!app.worker.is_busy(), |ui| {
+                let label = format!("{}  {}", app.t("shortcut-steam"), user.id);
+                if ui.button(label).clicked() {
+                    app.worker.send(Job::AddToSteam {
+                        user: Box::new(user.clone()),
+                        entry: Box::new(recof_core::steam::shortcuts::ShortcutEntry {
+                            app_name: "ReCoF".to_owned(),
+                            exe: install_root.join(recof_core::consts::GAME_EXE),
+                            start_dir: install_root.to_path_buf(),
+                            launch_options: arguments.clone(),
+                            icon: String::new(),
+                        }),
+                        stamp: crate::now_stamp(),
+                    });
+                }
+            });
+        }
+    });
 }
 
 #[cfg(test)]

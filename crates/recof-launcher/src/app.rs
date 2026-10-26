@@ -13,7 +13,7 @@ use recof_core::store::VersionStore;
 use crate::i18n::{Language, Translator};
 use crate::screens;
 use crate::theme;
-use crate::worker::{Detection, Event, Job, Measurement, Worker};
+use crate::worker::{Detection, Event, Job, Measurement, UpdateCheck, Worker};
 
 /// Which screen is showing.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -129,6 +129,20 @@ pub struct App {
     /// Whether the install should bring the vanilla saves over. Not a
     /// setting: it only matters while the install wizard is open.
     pub import_on_install: bool,
+
+    /// What the last update check found.
+    pub updates: UpdateCheck,
+    /// Whether the check has been asked for, so it runs once per start.
+    pub update_check_requested: bool,
+    /// Set once a newer launcher has been written to disk, so the user
+    /// can be asked to restart.
+    pub self_update_ready: Option<recof_core::version::Version>,
+
+    /// The backups there are, once they have been listed.
+    pub backups: Vec<recof_core::backup::Backup>,
+    pub backups_listed: bool,
+    /// What an import would do, worked out before it is offered.
+    pub import_plan: Option<recof_core::backup::ImportPlan>,
 }
 
 impl App {
@@ -187,6 +201,12 @@ impl App {
             measured_for: None,
             installed,
             import_on_install: true,
+            updates: UpdateCheck::default(),
+            update_check_requested: false,
+            self_update_ready: None,
+            backups: Vec::new(),
+            backups_listed: false,
+            import_plan: None,
         };
 
         // An interrupted operation is finished or undone before anything
@@ -194,6 +214,9 @@ impl App {
         if let Some(path) = app.settings.install_path.clone() {
             app.worker.send(Job::Recover { install_root: path });
         }
+        // And the update check starts now, on its own thread, whatever
+        // screen the launcher opens on.
+        screens::updates::check_once(&mut app);
         app
     }
 
@@ -377,6 +400,64 @@ impl App {
                 self.detect_requested = false;
                 self.notice = Some(Notice::good(self.t("uninstall-done")));
             }
+            Event::FetchProgress(progress) => {
+                self.progress = Some(self.fetch_progress(progress));
+            }
+            Event::UpdatesChecked(found) => {
+                self.updates = *found;
+            }
+            Event::Updated(state) => {
+                let version = state.version.to_string();
+                self.installed = Some(*state);
+                self.progress = None;
+                // What was offered is now installed, so the banner goes.
+                self.updates.recof = None;
+                self.notice = Some(Notice::good(
+                    self.t_args("update-done", &[("version", version)]),
+                ));
+            }
+            Event::SelfUpdated(version) => {
+                self.progress = None;
+                self.self_update_ready = Some(version);
+                self.updates.launcher = None;
+                self.notice = Some(Notice::good(self.t("update-launcher-restart")));
+            }
+            Event::BackedUp(made) => {
+                self.progress = None;
+                self.backups_listed = false;
+                self.notice = Some(match made {
+                    Some(backup) => Notice::good(
+                        self.t_args("backup-created", &[("name", backup.name.clone())]),
+                    ),
+                    None => Notice::info(self.t("import-nothing-found")),
+                });
+            }
+            Event::Backups(found) => {
+                self.backups = found;
+                self.backups_listed = true;
+            }
+            Event::Restored(count) => {
+                self.progress = None;
+                let _ = count;
+                self.notice = Some(Notice::good(self.t("backup-restored")));
+            }
+            Event::ImportPlanned(plan) => {
+                self.progress = None;
+                self.import_plan = Some(*plan);
+            }
+            Event::Imported(report) => {
+                self.progress = None;
+                self.import_plan = None;
+                self.notice = Some(Notice::good(
+                    self.t_args("import-done", &[("count", report.copied.to_string())]),
+                ));
+            }
+            Event::ShortcutMade => {
+                self.notice = Some(Notice::good(self.t("shortcut-created")));
+            }
+            Event::AddedToSteam => {
+                self.notice = Some(Notice::good(self.t("shortcut-steam-added")));
+            }
             Event::Failed {
                 message_id,
                 args,
@@ -386,6 +467,42 @@ impl App {
                 self.progress = None;
                 self.notice = Some(Notice::bad(self.translator.get_with(message_id, &args)));
             }
+        }
+    }
+
+    /// Turns a download or unpack step into something to show.
+    fn fetch_progress(&self, progress: recof_core::update::FetchProgress) -> Progress {
+        use recof_core::update::FetchProgress;
+        match progress {
+            FetchProgress::Metadata => Progress {
+                headline: self.t("update-verifying"),
+                ..Default::default()
+            },
+            FetchProgress::Archive(state) => Progress {
+                headline: self.t_args(
+                    "update-downloading",
+                    &[("name", recof_core::space::format_bytes(state.total))],
+                ),
+                detail: format!(
+                    "{} / {}",
+                    recof_core::space::format_bytes(state.done),
+                    recof_core::space::format_bytes(state.total)
+                ),
+                fraction: Some(state.fraction()),
+            },
+            FetchProgress::Verifying => Progress {
+                headline: self.t("update-verifying"),
+                ..Default::default()
+            },
+            FetchProgress::Extracting { done, total } => Progress {
+                headline: self.t("update-extracting"),
+                detail: format!("{done} / {total}"),
+                fraction: Some(if total == 0 {
+                    1.0
+                } else {
+                    done as f32 / total as f32
+                }),
+            },
         }
     }
 

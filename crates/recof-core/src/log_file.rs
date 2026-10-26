@@ -19,10 +19,31 @@ pub const KEEP_FILES: usize = 5;
 
 const CURRENT: &str = "recof-launcher.log";
 
+/// How much of a dependency's chatter is kept.
+///
+/// The log is what the bug report shows the user, and what a
+/// maintainer reads first. One TLS handshake at debug level buries
+/// everything the launcher itself said, so dependencies are held to
+/// warnings and above while the launcher's own crates are not.
+pub const DEPENDENCY_LEVEL: log::LevelFilter = log::LevelFilter::Warn;
+
+/// Targets that count as the launcher's own code.
+const OWN_TARGETS: &[&str] = &["recof", "ReCoF", "xtask"];
+
 /// A `log` implementation writing to a rotating file.
 pub struct FileLogger {
     inner: Mutex<Inner>,
     level: log::LevelFilter,
+}
+
+/// Whether a target is one of the launcher's own crates.
+///
+/// Rust turns a hyphen in a crate name into an underscore in the
+/// target, so `recof-core` logs as `recof_core`.
+pub fn is_own_target(target: &str) -> bool {
+    OWN_TARGETS
+        .iter()
+        .any(|own| target.len() >= own.len() && target[..own.len()].eq_ignore_ascii_case(own))
 }
 
 struct Inner {
@@ -117,7 +138,12 @@ impl Inner {
 
 impl log::Log for FileLogger {
     fn enabled(&self, metadata: &log::Metadata<'_>) -> bool {
-        metadata.level() <= self.level
+        let allowed = if is_own_target(metadata.target()) {
+            self.level
+        } else {
+            self.level.min(DEPENDENCY_LEVEL)
+        };
+        metadata.level() <= allowed
     }
 
     fn log(&self, record: &log::Record<'_>) {
@@ -163,7 +189,9 @@ mod tests {
         logger.log(
             &log::Record::builder()
                 .level(log::Level::Info)
-                .target("test")
+                // One of the launcher's own targets, so the
+                // dependency filter does not apply.
+                .target("recof_core::test")
                 .args(format_args!("{message}"))
                 .build(),
         );
@@ -183,6 +211,59 @@ mod tests {
         assert!(text.contains("INFO"));
 
         std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn a_dependency_talking_at_debug_level_is_not_kept() {
+        let base = scratch("dependency-noise");
+        let logger = FileLogger::new(&base, log::LevelFilter::Debug).unwrap();
+
+        for target in ["rustls::client::hs", "ureq::run", "eframe::native"] {
+            logger.log(
+                &log::Record::builder()
+                    .level(log::Level::Debug)
+                    .target(target)
+                    .args(format_args!("handshake noise"))
+                    .build(),
+            );
+        }
+        record(&logger, "something the launcher did");
+        logger.flush();
+
+        let text = std::fs::read_to_string(FileLogger::current_path(&base)).unwrap();
+        assert!(!text.contains("handshake noise"), "{text}");
+        assert!(text.contains("something the launcher did"));
+
+        std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn a_dependency_warning_is_still_kept() {
+        let base = scratch("dependency-warning");
+        let logger = FileLogger::new(&base, log::LevelFilter::Debug).unwrap();
+        logger.log(
+            &log::Record::builder()
+                .level(log::Level::Warn)
+                .target("ureq::run")
+                .args(format_args!("the connection failed"))
+                .build(),
+        );
+        logger.flush();
+
+        let text = std::fs::read_to_string(FileLogger::current_path(&base)).unwrap();
+        assert!(text.contains("the connection failed"));
+
+        std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn the_launchers_own_crates_are_recognised() {
+        for target in ["recof_core", "recof_platform", "ReCoF_Launcher", "xtask"] {
+            assert!(is_own_target(target), "{target}");
+        }
+        for target in ["rustls", "ureq::run", "eframe", "egui_glow", "zip"] {
+            assert!(!is_own_target(target), "{target}");
+        }
     }
 
     #[test]
