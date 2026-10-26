@@ -23,6 +23,27 @@ impl DiskSpace {
     }
 }
 
+/// A resolution the display can show.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct DisplayMode {
+    pub width: u32,
+    pub height: u32,
+}
+
+impl DisplayMode {
+    /// Whether this is wider than four by three, which is what the game's
+    /// widescreen flag is for.
+    pub fn is_widescreen(&self) -> bool {
+        self.width * 3 > self.height * 4
+    }
+}
+
+impl std::fmt::Display for DisplayMode {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(formatter, "{} x {}", self.width, self.height)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -45,5 +66,51 @@ mod tests {
     #[test]
     fn fits_does_not_overflow() {
         assert!(!space(u64::MAX - 1).fits(u64::MAX, u64::MAX));
+    }
+
+    #[test]
+    fn widescreen_is_anything_wider_than_four_by_three() {
+        assert!(!DisplayMode {
+            width: 800,
+            height: 600
+        }
+        .is_widescreen());
+        assert!(!DisplayMode {
+            width: 1280,
+            height: 960
+        }
+        .is_widescreen());
+        assert!(!DisplayMode {
+            width: 1280,
+            height: 1024
+        }
+        .is_widescreen());
+        assert!(DisplayMode {
+            width: 1280,
+            height: 720
+        }
+        .is_widescreen());
+        assert!(DisplayMode {
+            width: 1920,
+            height: 1080
+        }
+        .is_widescreen());
+        assert!(DisplayMode {
+            width: 2560,
+            height: 1080
+        }
+        .is_widescreen());
+    }
+
+    #[test]
+    fn a_mode_reads_as_a_resolution() {
+        assert_eq!(
+            DisplayMode {
+                width: 1920,
+                height: 1080
+            }
+            .to_string(),
+            "1920 x 1080"
+        );
     }
 }

@@ -12,7 +12,7 @@ mod error;
 mod types;
 
 pub use error::PlatformError;
-pub use types::DiskSpace;
+pub use types::{DiskSpace, DisplayMode};
 
 pub type Result<T> = std::result::Result<T, PlatformError>;
 

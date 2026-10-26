@@ -21,11 +21,20 @@ recof-platform = { path = "crates/recof-platform" }
 
 base64 = "0.23"
 ed25519-dalek = "3.0"
-eframe = { version = "0.37", default-features = false, features = ["glow", "default_fonts"] }
+# system_fonts loads a system font on demand for characters the built in
+# fonts lack. It costs about 360 KiB in the executable and is what makes
+# the Chinese translation, and the Chinese entry in the language list,
+# readable without embedding a ten megabyte font. Measured: 5.56 MiB
+# without it, 5.91 MiB with it.
+eframe = { version = "0.37", default-features = false, features = [
+    "glow",
+    "default_fonts",
+    "system_fonts",
+] }
 egui = "0.37"
 fluent-bundle = "0.16"
 hex = "0.4"
-log = "0.4"
+log = { version = "0.4", features = ["std"] }
 rfd = { version = "0.17", default-features = false }
 rust-embed = "8"
 self-replace = "1.5"
@@ -47,6 +56,7 @@ features = [
     "Win32_Graphics_Gdi",
     "Win32_Storage_FileSystem",
     "Win32_System_Com",
+    "Win32_System_Diagnostics_ToolHelp",
     "Win32_System_Registry",
     "Win32_System_SystemInformation",
     "Win32_System_Threading",
