@@ -388,6 +388,41 @@ mod tests {
     }
 
     #[test]
+    fn the_bundled_hero_covers_every_window_without_stretching() {
+        // The shape the launcher actually ships: a hero is a long strip,
+        // about three times wider than it is tall, and the window never
+        // is. So this is the case that runs, not the square one.
+        let hero = Vec2::new(2560.0, 827.0);
+
+        // A window too small to be useful, the usual one, one dragged
+        // tall and narrow, and one filling a wide monitor.
+        for area in [
+            Vec2::new(640.0, 480.0),
+            Vec2::new(1100.0, 700.0),
+            Vec2::new(520.0, 900.0),
+            Vec2::new(2560.0, 1440.0),
+            Vec2::new(3440.0, 1440.0),
+        ] {
+            let uv = cover(hero, area);
+
+            // Never samples outside the picture, which would show as a
+            // smeared edge.
+            assert!(uv.left() >= 0.0 && uv.right() <= 1.0, "{area:?} {uv:?}");
+            assert!(uv.top() >= 0.0 && uv.bottom() <= 1.0, "{area:?} {uv:?}");
+
+            // Covers: at least one axis is used whole, so no gap shows.
+            let whole = (uv.width() - 1.0).abs() < 0.001 || (uv.height() - 1.0).abs() < 0.001;
+            assert!(whole, "a gap would show at {area:?}: {uv:?}");
+
+            // And the part that is shown has the shape of the window,
+            // which is the same as saying nothing is stretched.
+            let shown = Vec2::new(hero.x * uv.width(), hero.y * uv.height());
+            let error = (shown.x / shown.y) - (area.x / area.y);
+            assert!(error.abs() < 0.01, "stretched at {area:?}: {uv:?}");
+        }
+    }
+
+    #[test]
     fn a_picture_the_shape_of_the_window_is_not_trimmed() {
         let uv = cover(Vec2::new(1920.0, 1080.0), Vec2::new(960.0, 540.0));
         assert!((uv.width() - 1.0).abs() < 0.001, "{uv:?}");

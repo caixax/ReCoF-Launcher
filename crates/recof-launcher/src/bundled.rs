@@ -2,27 +2,33 @@
 //!
 //! `build.rs` looks in `assets/artwork` and sets a cfg flag for each
 //! picture it finds, so this compiles to `None` when the folder is empty
-//! and the launcher falls back to what it draws. Nothing here is a
-//! picture of the game unless somebody put one in that folder and
-//! committed it, which is their decision and not the code's.
+//! and the launcher falls back to what it draws.
+//!
+//! What this repository carries, and the permission behind it, is
+//! written down in CREDITS.md at the root. CREDITS.txt beside the
+//! pictures carries the same names, and is what reaches the screen.
 //!
 //! What wins, in order: the user's theme folder, then this, then the
 //! launcher's own drawing.
 
 use egui::{ColorImage, TextureHandle, TextureOptions};
 
+// `build.rs` stages whatever it found under a plain name, so these do not
+// have to know which container the picture arrived in. The decoder reads
+// the format from the bytes.
+
 #[cfg(bundled_hero)]
-const HERO: Option<&[u8]> = Some(include_bytes!("../assets/artwork/hero.png"));
+const HERO: Option<&[u8]> = Some(include_bytes!(concat!(env!("OUT_DIR"), "/hero")));
 #[cfg(not(bundled_hero))]
 const HERO: Option<&[u8]> = None;
 
 #[cfg(bundled_logo)]
-const LOGO: Option<&[u8]> = Some(include_bytes!("../assets/artwork/logo.png"));
+const LOGO: Option<&[u8]> = Some(include_bytes!(concat!(env!("OUT_DIR"), "/logo")));
 #[cfg(not(bundled_logo))]
 const LOGO: Option<&[u8]> = None;
 
 #[cfg(bundled_icon)]
-const ICON: Option<&[u8]> = Some(include_bytes!("../assets/artwork/icon.png"));
+const ICON: Option<&[u8]> = Some(include_bytes!(concat!(env!("OUT_DIR"), "/icon")));
 #[cfg(not(bundled_icon))]
 const ICON: Option<&[u8]> = None;
 

@@ -4,10 +4,9 @@
 # are notes like this one and never reach the screen; everything else is
 # shown in Settings under Appearance and in About.
 #
-# For example:
-#
-#   hero.png  by Somebody, from where you got it
-#   logo.png  by Somebody Else
-#
-# The folder ships empty, so this file ships with nothing but these
-# notes. Add a picture, add its line.
+# The permission behind each line is recorded in CREDITS.md at the root
+# of the repository, with the evidence in docs/permissions. Do not add a
+# line here without adding the permission there.
+
+Background art by Greez, used with permission.
+steamgriddb.com/hero/2549

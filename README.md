@@ -106,6 +106,10 @@ Documented in [docs/releases.md](docs/releases.md). In short: generate the signi
 - Saving space with hardlinks or shared assets. See [docs/ideas.md](docs/ideas.md).
 - Installing ReCoF inside the Steam folder.
 
+## Credits
+
+The launcher draws its own look, so it runs with no artwork at all. The background it ships with is by Greez (https://www.steamgriddb.com/hero/2549), used with permission. See [CREDITS.md](CREDITS.md) for that permission, for the font, and for what to do if you add artwork of your own.
+
 ## License
 
 MIT, see [LICENSE](LICENSE). ReCoF itself is a separate project under its own terms; this launcher downloads nothing except what that project publishes.
