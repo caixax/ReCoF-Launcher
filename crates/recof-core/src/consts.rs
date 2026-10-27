@@ -55,7 +55,7 @@ pub const LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// variable, so changing it rebuilds.
 pub const DISCORD_APP_ID: &str = match option_env!("RECOF_DISCORD_APP_ID") {
     Some(id) => id,
-    None => "",
+    None => "1564718095418003586",
 };
 
 /// Steam URL that starts retail Cry of Fear.
