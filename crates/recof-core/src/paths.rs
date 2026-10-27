@@ -57,6 +57,12 @@ impl AppPaths {
         self.root.join("cache")
     }
 
+    /// Artwork the user supplied. The launcher ships none of its own,
+    /// so whatever is here is the only picture of the game it has.
+    pub fn theme_dir(&self) -> PathBuf {
+        self.root.join("theme")
+    }
+
     /// Where a download is written before it is verified.
     pub fn downloads_dir(&self) -> PathBuf {
         self.cache_dir().join("downloads")
@@ -71,6 +77,7 @@ impl AppPaths {
             self.versions_dir(),
             self.cache_dir(),
             self.downloads_dir(),
+            self.theme_dir(),
         ] {
             std::fs::create_dir_all(&directory).at(&directory)?;
         }
@@ -118,6 +125,7 @@ mod tests {
             paths.versions_dir(),
             paths.cache_dir(),
             paths.downloads_dir(),
+            paths.theme_dir(),
         ] {
             assert!(
                 is_inside(&path, paths.root()),
@@ -144,6 +152,7 @@ mod tests {
         assert!(paths.backups_dir().is_dir());
         assert!(paths.versions_dir().is_dir());
         assert!(paths.downloads_dir().is_dir());
+        assert!(paths.theme_dir().is_dir());
         // Running it twice is fine.
         paths.create_all().unwrap();
 

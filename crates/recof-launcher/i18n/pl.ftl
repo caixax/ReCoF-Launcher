@@ -316,3 +316,50 @@ err-github = GitHub odpowiedział błędem: { $detail }
 err-rate-limited = GitHub ogranicza liczbę zapytań z tego połączenia. Spróbuj za kilka minut.
 err-no-release = Na tym kanale nie opublikowano jeszcze żadnego wydania.
 err-command-line-too-long = Wiersz poleceń miałby { $length } znaków, a gra przyjmuje najwyżej { $limit }. Skróć dodatkowe argumenty.
+
+## Ustawienia, w zakładkach
+
+settings-tab-look = Wygląd
+settings-tab-language = Język
+settings-tab-updates = Aktualizacje
+settings-tab-behaviour = Zachowanie
+settings-tab-about = O programie
+
+## Wygląd
+
+look-title = Wygląd
+look-show-hero = Używaj obrazu tła
+look-hero-dim = Jak mocno przyciemniane jest tło
+look-hero-dim-help = Na tyle, żeby tekst na nim dało się czytać.
+look-grain = Ziarno filmowe
+look-command-line = Pokazuj wiersz poleceń na ekranie głównym
+
+look-artwork-title = Twoje własne grafiki
+look-artwork-help = Program nie zawiera żadnych obrazów z gry. Włóż swoje do tego folderu, a je wykorzysta: hero.png jako tło, logo.png jako tytuł, icon.png jako ikonę okna. Zostają na tym komputerze i nigdy nie trafiają do wydania.
+look-open-theme = Otwórz folder grafik
+look-reload-art = Wczytaj grafiki ponownie
+look-using-art = Używane są twoje grafiki: { $pieces }
+look-no-art = Nie znaleziono grafik, więc program rysuje własne.
+
+## Zachowanie
+
+behaviour-minimize = Zminimalizuj program po uruchomieniu gry
+behaviour-close = Zamknij program po uruchomieniu gry
+behaviour-close-help = Ma pierwszeństwo przed minimalizowaniem.
+
+## O programie
+
+about-what = ReCoF Launcher instaluje, aktualizuje i uruchamia ReCoF, ulepszoną rekompilację Cry of Fear. Kopiuje twoją instalację ze Steama do wskazanego folderu i nigdy nie zapisuje niczego w tej ze Steama.
+about-made-by = Autor: { $author }, który tworzy też samo ReCoF.
+about-version = Program { $version }
+about-licence = Licencja MIT. Kod jest pod { $url }.
+about-recof = ReCoF jest pod { $url }.
+about-font = Tytuł złożono krojem Archivo Black, na licencji SIL Open Font License 1.1.
+about-not-affiliated = Bez związku z Team Psykskallar. Cry of Fear należy do swoich autorów; ten program instaluje jedynie rekompilację zrobioną z twojej własnej kopii.
+
+## Źródła grafik
+
+look-credits-title = Źródła grafik
+look-credits-none = Te grafiki przyszły bez informacji o autorach.
+look-credits-help = Grafiki nie są częścią programu. Pochodzą z wydania ReCoF i należą do tych, którzy je zrobili.
+look-forget-art = Usuń grafiki

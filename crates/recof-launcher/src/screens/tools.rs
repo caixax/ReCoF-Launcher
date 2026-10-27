@@ -35,100 +35,387 @@ fn back_bar(app: &mut App, ui: &mut egui::Ui, title: &str) {
     theme::rule(ui);
 }
 
+/// Which part of the settings is showing.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum SettingsTab {
+    #[default]
+    Look,
+    Language,
+    Updates,
+    Behaviour,
+    About,
+}
+
+impl SettingsTab {
+    /// The tabs in the order they are shown.
+    pub const ALL: [SettingsTab; 5] = [
+        SettingsTab::Look,
+        SettingsTab::Language,
+        SettingsTab::Updates,
+        SettingsTab::Behaviour,
+        SettingsTab::About,
+    ];
+
+    /// The message id for the tab's name.
+    pub fn key(self) -> &'static str {
+        match self {
+            SettingsTab::Look => "settings-tab-look",
+            SettingsTab::Language => "settings-tab-language",
+            SettingsTab::Updates => "settings-tab-updates",
+            SettingsTab::Behaviour => "settings-tab-behaviour",
+            SettingsTab::About => "settings-tab-about",
+        }
+    }
+}
+
 pub fn settings(app: &mut App, ui: &mut egui::Ui) {
     let title = app.t("settings-title");
     back_bar(app, ui, &title);
 
+    ui.horizontal_wrapped(|ui| {
+        for tab in SettingsTab::ALL {
+            let label = app.t(tab.key());
+            if ui
+                .selectable_label(app.settings_tab == tab, label)
+                .clicked()
+            {
+                app.settings_tab = tab;
+            }
+        }
+    });
+    theme::rule(ui);
+
     egui::ScrollArea::vertical().show(ui, |ui| {
         ui.set_width(ui.available_width());
+        match app.settings_tab {
+            SettingsTab::Look => look_tab(app, ui),
+            SettingsTab::Language => language_tab(app, ui),
+            SettingsTab::Updates => updates_tab(app, ui),
+            SettingsTab::Behaviour => behaviour_tab(app, ui),
+            SettingsTab::About => about_tab(app, ui),
+        }
+    });
+}
 
-        theme::card(ui, |ui| {
-            ui.set_width(ui.available_width());
-            ui.label(egui::RichText::new(app.t("settings-language")).strong());
-            ui.add_space(4.0);
+fn look_tab(app: &mut App, ui: &mut egui::Ui) {
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("look-title")).strong());
+        ui.add_space(6.0);
 
-            let current = app.translator.language();
-            let mut chosen = None;
-            egui::ComboBox::from_id_salt("language")
-                .selected_text(current.native_name)
-                .show_ui(ui, |ui| {
-                    for language in LANGUAGES {
-                        if ui
-                            .selectable_label(language.tag == current.tag, language.native_name)
-                            .clicked()
-                        {
-                            chosen = Some(*language);
-                        }
-                    }
-                });
-            if let Some(language) = chosen {
-                app.set_language(language);
-            }
-            if !app.translator.language().reviewed {
-                theme::help(ui, &app.t("language-not-reviewed-notice"));
-            }
-        });
+        // Labels first: each control borrows the settings mutably.
+        let hero_label = app.t("look-show-hero");
+        let dim_label = app.t("look-hero-dim");
+        let dim_help = app.t("look-hero-dim-help");
+        let grain_label = app.t("look-grain");
+        let line_label = app.t("look-command-line");
+        let mut changed = false;
 
-        ui.add_space(10.0);
-        theme::card(ui, |ui| {
-            ui.set_width(ui.available_width());
-            ui.label(egui::RichText::new(app.t("channel-title")).strong());
-            ui.add_space(4.0);
+        changed |= ui
+            .checkbox(&mut app.settings.look.show_hero, hero_label)
+            .changed();
 
-            let mut channel = app.settings.channel;
-            let mut changed = false;
-            changed |= ui
-                .radio_value(&mut channel, Channel::Stable, app.t("channel-stable"))
-                .changed();
-            changed |= ui
-                .radio_value(&mut channel, Channel::Beta, app.t("channel-beta"))
-                .changed();
-            theme::help(ui, &app.t("channel-beta-help"));
-            if changed {
-                app.settings.channel = channel;
-                app.save_settings();
-                // What was found belongs to the other channel.
-                app.updates = crate::worker::UpdateCheck::default();
-                crate::screens::updates::check_now(app);
-            }
-        });
-
-        ui.add_space(10.0);
-        theme::card(ui, |ui| {
-            ui.set_width(ui.available_width());
-            // Labels first: a checkbox borrows the settings mutably.
-            let updates_label = app.t("settings-check-updates");
-            let discord_label = app.t("settings-discord");
-            let discord_help = app.t("settings-discord-help");
-            let keep_label = app.t("settings-keep-versions");
-            let mut changed = false;
-
-            changed |= ui
-                .checkbox(&mut app.settings.check_updates_on_start, updates_label)
-                .changed();
-
-            changed |= ui
-                .checkbox(&mut app.settings.discord_rich_presence, discord_label)
-                .changed();
-            theme::help(ui, &discord_help);
-
-            ui.add_space(6.0);
+        ui.add_enabled_ui(app.settings.look.show_hero, |ui| {
             ui.horizontal(|ui| {
-                ui.label(keep_label);
-                let mut keep = app.settings.keep_versions as u32;
-                if ui
-                    .add(egui::DragValue::new(&mut keep).range(1..=10))
-                    .changed()
-                {
-                    app.settings.keep_versions = keep as usize;
-                    changed = true;
+                ui.label(dim_label);
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut app.settings.look.hero_dim, 0.0..=0.95)
+                            .show_value(false),
+                    )
+                    .changed();
+            });
+            theme::help(ui, &dim_help);
+        });
+
+        changed |= ui
+            .checkbox(&mut app.settings.look.grain, grain_label)
+            .changed();
+        changed |= ui
+            .checkbox(&mut app.settings.look.show_command_line, line_label)
+            .changed();
+
+        if changed {
+            app.save_settings();
+        }
+    });
+
+    ui.add_space(10.0);
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("look-artwork-title")).strong());
+        theme::help(ui, &app.t("look-artwork-help"));
+        ui.add_space(6.0);
+
+        // What is actually in use, so the folder is never a guess.
+        let mut pieces = Vec::new();
+        if app.artwork.hero().is_some() {
+            pieces.push("hero");
+        }
+        if app.artwork.logo().is_some() {
+            pieces.push("logo");
+        }
+        if app.paths.theme_dir().join("icon.png").is_file() {
+            pieces.push("icon");
+        }
+
+        if pieces.is_empty() {
+            theme::help(ui, &app.t("look-no-art"));
+        } else {
+            ui.label(
+                egui::RichText::new(app.t_args("look-using-art", &[("pieces", pieces.join(", "))]))
+                    .color(theme::GOOD),
+            );
+        }
+
+        ui.add_space(6.0);
+        ui.horizontal(|ui| {
+            if ui.button(app.t("look-open-theme")).clicked() {
+                let folder = app.paths.theme_dir().display().to_string();
+                if let Err(error) = recof_platform::open_in_shell(&folder) {
+                    log::warn!("the theme folder could not be opened: {error}");
+                }
+            }
+            if ui.button(app.t("look-reload-art")).clicked() {
+                let ctx = ui.ctx().clone();
+                app.reload_artwork(&ctx);
+            }
+            // Only offered for artwork the launcher fetched. A picture
+            // the user put there by hand is theirs to remove.
+            if recof_core::artwork::source(&app.paths.theme_dir())
+                == recof_core::artwork::Source::Release
+                && ui.button(app.t("look-forget-art")).clicked()
+            {
+                if let Err(error) = recof_core::artwork::clear(&app.paths.theme_dir()) {
+                    log::warn!("the artwork could not be removed: {error}");
+                }
+                let ctx = ui.ctx().clone();
+                app.reload_artwork(&ctx);
+                app.artwork_credits = None;
+            }
+        });
+    });
+
+    ui.add_space(10.0);
+    credits_card(app, ui);
+}
+
+/// Who made the pictures, which is the whole reason the launcher ships
+/// none of its own: the art belongs to whoever drew it.
+fn credits_card(app: &mut App, ui: &mut egui::Ui) {
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("look-credits-title")).strong());
+        theme::help(ui, &app.t("look-credits-help"));
+        ui.add_space(6.0);
+
+        match &app.artwork_credits {
+            Some(credits) => {
+                for line in credits.lines().filter(|line| !line.trim().is_empty()) {
+                    ui.label(egui::RichText::new(line).size(12.5).color(theme::TEXT));
+                }
+            }
+            None => theme::help(ui, &app.t("look-credits-none")),
+        }
+    });
+}
+
+fn language_tab(app: &mut App, ui: &mut egui::Ui) {
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("settings-language")).strong());
+        ui.add_space(4.0);
+
+        let current = app.translator.language();
+        let mut chosen = None;
+        egui::ComboBox::from_id_salt("language")
+            .selected_text(current.native_name)
+            .show_ui(ui, |ui| {
+                for language in LANGUAGES {
+                    if ui
+                        .selectable_label(language.tag == current.tag, language.native_name)
+                        .clicked()
+                    {
+                        chosen = Some(*language);
+                    }
                 }
             });
+        if let Some(language) = chosen {
+            app.set_language(language);
+        }
+        if !app.translator.language().reviewed {
+            ui.add_space(4.0);
+            theme::help(ui, &app.t("language-not-reviewed-notice"));
+        }
+    });
+}
 
-            if changed {
-                app.save_settings();
+fn updates_tab(app: &mut App, ui: &mut egui::Ui) {
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("channel-title")).strong());
+        ui.add_space(4.0);
+
+        let mut channel = app.settings.channel;
+        let stable = app.t("channel-stable");
+        let beta = app.t("channel-beta");
+        let beta_help = app.t("channel-beta-help");
+        let mut changed = false;
+
+        changed |= ui
+            .radio_value(&mut channel, Channel::Stable, stable)
+            .changed();
+        changed |= ui.radio_value(&mut channel, Channel::Beta, beta).changed();
+        theme::help(ui, &beta_help);
+
+        if changed {
+            app.settings.channel = channel;
+            app.save_settings();
+            // The other channel's answer says nothing about this one, so
+            // the check runs again rather than keeping a stale result.
+            app.updates = Default::default();
+            app.update_check_requested = false;
+            crate::screens::updates::check_once(app);
+        }
+    });
+
+    ui.add_space(10.0);
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        let updates_label = app.t("settings-check-updates");
+        let keep_label = app.t("settings-keep-versions");
+        let mut changed = false;
+
+        changed |= ui
+            .checkbox(&mut app.settings.check_updates_on_start, updates_label)
+            .changed();
+
+        ui.add_space(6.0);
+        ui.horizontal(|ui| {
+            ui.label(keep_label);
+            let mut keep = app.settings.keep_versions as u32;
+            if ui
+                .add(egui::DragValue::new(&mut keep).range(1..=10))
+                .changed()
+            {
+                app.settings.keep_versions = keep as usize;
+                changed = true;
             }
         });
+
+        if changed {
+            app.save_settings();
+        }
+    });
+}
+
+fn behaviour_tab(app: &mut App, ui: &mut egui::Ui) {
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        let minimize_label = app.t("behaviour-minimize");
+        let close_label = app.t("behaviour-close");
+        let close_help = app.t("behaviour-close-help");
+        let mut changed = false;
+
+        ui.add_enabled_ui(!app.settings.behaviour.close_on_launch, |ui| {
+            changed |= ui
+                .checkbox(
+                    &mut app.settings.behaviour.minimize_on_launch,
+                    minimize_label,
+                )
+                .changed();
+        });
+        changed |= ui
+            .checkbox(&mut app.settings.behaviour.close_on_launch, close_label)
+            .changed();
+        theme::help(ui, &close_help);
+
+        if changed {
+            app.save_settings();
+        }
+    });
+
+    ui.add_space(10.0);
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+        let discord_label = app.t("settings-discord");
+        let discord_help = app.t("settings-discord-help");
+        if ui
+            .checkbox(&mut app.settings.discord_rich_presence, discord_label)
+            .changed()
+        {
+            app.save_settings();
+        }
+        theme::help(ui, &discord_help);
+    });
+
+    ui.add_space(10.0);
+    if ui.button(app.t("settings-open-logs")).clicked() {
+        let folder = app.paths.logs_dir().display().to_string();
+        if let Err(error) = recof_platform::open_in_shell(&folder) {
+            log::warn!("the log folder could not be opened: {error}");
+        }
+    }
+}
+
+fn about_tab(app: &mut App, ui: &mut egui::Ui) {
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
+
+        let logo = app.artwork.logo().cloned();
+        let width = ui.available_width();
+        crate::brand::wordmark(ui, logo.as_ref(), width);
+
+        ui.add_space(10.0);
+        theme::body(ui, &app.t("about-what"));
+
+        ui.add_space(8.0);
+        ui.label(
+            egui::RichText::new(app.t_args("about-made-by", &[("author", AUTHOR.to_owned())]))
+                .color(theme::TEXT)
+                .strong(),
+        );
+
+        ui.add_space(8.0);
+        theme::help(
+            ui,
+            &app.t_args(
+                "about-version",
+                &[("version", recof_core::consts::LAUNCHER_VERSION.to_owned())],
+            ),
+        );
+        theme::help(
+            ui,
+            &app.t_args(
+                "about-licence",
+                &[(
+                    "url",
+                    format!("github.com/{}", recof_core::consts::LAUNCHER_REPO),
+                )],
+            ),
+        );
+        theme::help(
+            ui,
+            &app.t_args(
+                "about-recof",
+                &[(
+                    "url",
+                    format!("github.com/{}", recof_core::consts::RECOF_REPO),
+                )],
+            ),
+        );
+        theme::help(ui, &app.t("about-font"));
+
+        ui.add_space(8.0);
+        theme::help(ui, &app.t("about-not-affiliated"));
+
+        if let Some(credits) = app.artwork_credits.clone() {
+            ui.add_space(8.0);
+            ui.label(egui::RichText::new(app.t("look-credits-title")).strong());
+            for line in credits.lines().filter(|line| !line.trim().is_empty()) {
+                theme::help(ui, line);
+            }
+        }
 
         ui.add_space(10.0);
         ui.horizontal(|ui| {
@@ -139,19 +426,12 @@ pub fn settings(app: &mut App, ui: &mut egui::Ui) {
                 }
             }
         });
-
-        ui.add_space(10.0);
-        theme::help(
-            ui,
-            &format!(
-                "{} {}  ({})",
-                app.t("app-name"),
-                recof_core::consts::LAUNCHER_VERSION,
-                recof_platform::PLATFORM_NAME
-            ),
-        );
     });
 }
+
+/// Who made it. One place, so the about screen and anything else that
+/// needs it cannot drift apart.
+pub const AUTHOR: &str = "caixax";
 
 pub fn maintenance(app: &mut App, ui: &mut egui::Ui) {
     let title = app.t("maintain-title");

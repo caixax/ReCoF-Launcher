@@ -3,6 +3,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod app;
+mod art;
+mod brand;
 mod i18n;
 mod markdown;
 mod screens;
@@ -22,11 +24,23 @@ fn main() -> eframe::Result<()> {
         recof_platform::PLATFORM_NAME
     );
 
+    // The window icon has to be decided before the window exists, so
+    // it is read here rather than from the app.
+    let mut viewport = egui::ViewportBuilder::default()
+        .with_inner_size([1000.0, 680.0])
+        .with_min_inner_size([860.0, 580.0])
+        .with_title(consts::APP_DISPLAY_NAME);
+    if let Ok(paths) = AppPaths::discover() {
+        if let Err(error) = art::prepare(&paths.theme_dir()) {
+            log::warn!("the theme folder could not be prepared: {error}");
+        }
+        if let Some(icon) = art::window_icon(&paths.theme_dir()) {
+            viewport = viewport.with_icon(icon);
+        }
+    }
+
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default()
-            .with_inner_size([960.0, 660.0])
-            .with_min_inner_size([820.0, 560.0])
-            .with_title(consts::APP_DISPLAY_NAME),
+        viewport,
         ..Default::default()
     };
 

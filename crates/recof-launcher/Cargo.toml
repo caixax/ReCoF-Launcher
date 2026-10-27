@@ -19,6 +19,7 @@ recof-platform.workspace = true
 eframe.workspace = true
 egui.workspace = true
 fluent-bundle.workspace = true
+image.workspace = true
 log.workspace = true
 rfd.workspace = true
 rust-embed.workspace = true

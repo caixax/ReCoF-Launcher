@@ -314,3 +314,50 @@ err-github = GitHub answered with an error: { $detail }
 err-rate-limited = GitHub is rate limiting this connection. Try again in a few minutes.
 err-no-release = No release has been published on this channel yet.
 err-command-line-too-long = The command line would be { $length } characters long, and the game takes at most { $limit }. Shorten the extra arguments.
+
+## Settings, in tabs
+
+settings-tab-look = Appearance
+settings-tab-language = Language
+settings-tab-updates = Updates
+settings-tab-behaviour = Behaviour
+settings-tab-about = About
+
+## Appearance
+
+look-title = Appearance
+look-show-hero = Use the background picture
+look-hero-dim = How dark the background is
+look-hero-dim-help = Far enough that the text over it stays readable.
+look-grain = Film grain
+look-command-line = Show the command line on the main screen
+
+look-artwork-title = Your own artwork
+look-artwork-help = The launcher ships no pictures of the game. Put your own in this folder and it uses them: hero.png for the background, logo.png for the title, icon.png for the window icon. They stay on this machine and never go into a release.
+look-open-theme = Open the artwork folder
+look-reload-art = Reload artwork
+look-using-art = Using your artwork: { $pieces }
+look-no-art = No artwork found, so the launcher is drawing its own.
+
+## Behaviour
+
+behaviour-minimize = Minimise the launcher when the game starts
+behaviour-close = Close the launcher when the game starts
+behaviour-close-help = Takes precedence over minimising.
+
+## About
+
+about-what = ReCoF Launcher installs, updates and starts ReCoF, the improved recompilation of Cry of Fear. It copies your Steam installation to a folder of your choosing and never writes inside the Steam one.
+about-made-by = Made by { $author }, who also makes ReCoF itself.
+about-version = Launcher { $version }
+about-licence = MIT licensed. The source is at { $url }.
+about-recof = ReCoF is at { $url }.
+about-font = The title is set in Archivo Black, under the SIL Open Font License 1.1.
+about-not-affiliated = Not affiliated with Team Psykskallar. Cry of Fear belongs to its authors; this launcher only installs a recompilation of it from your own copy.
+
+## Artwork credits
+
+look-credits-title = Artwork credits
+look-credits-none = No credits came with this artwork.
+look-credits-help = The artwork is not part of the launcher. It comes from the ReCoF release and belongs to whoever made it.
+look-forget-art = Remove the artwork

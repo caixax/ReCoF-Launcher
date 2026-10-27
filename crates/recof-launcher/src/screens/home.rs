@@ -65,14 +65,11 @@ fn channel_key(channel: recof_core::manifest::Channel) -> &'static str {
 }
 
 fn top_bar(app: &mut App, ui: &mut egui::Ui) {
-    ui.horizontal(|ui| {
-        ui.label(
-            egui::RichText::new(app.t("app-name"))
-                .size(18.0)
-                .color(theme::TEXT)
-                .strong(),
-        );
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+    let width = ui.available_width();
+    ui.horizontal_top(|ui| {
+        // The navigation is laid out first, from the right, so the
+        // wordmark can have whatever is left of the row.
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
             if ui.button(app.t("settings-title")).clicked() {
                 app.screen = Screen::Settings;
             }
@@ -82,6 +79,11 @@ fn top_bar(app: &mut App, ui: &mut egui::Ui) {
             if ui.button(app.t("bug-title")).clicked() {
                 app.screen = Screen::BugReport;
             }
+
+            ui.with_layout(egui::Layout::left_to_right(egui::Align::Min), |ui| {
+                let logo = app.artwork.logo().cloned();
+                crate::brand::wordmark(ui, logo.as_ref(), width);
+            });
         });
     });
 }
@@ -94,7 +96,8 @@ fn play_buttons(app: &mut App, ui: &mut egui::Ui) {
         ui.add_enabled_ui(enabled, |ui| {
             if theme::primary_button(ui, &app.t("home-play")).clicked() {
                 if let Some(root) = install_root.clone() {
-                    start_game(app, &root);
+                    let ctx = ui.ctx().clone();
+                    start_game(app, &ctx, &root);
                 }
             }
         });
@@ -110,7 +113,7 @@ fn play_buttons(app: &mut App, ui: &mut egui::Ui) {
     });
 }
 
-fn start_game(app: &mut App, install_root: &std::path::Path) {
+fn start_game(app: &mut App, ctx: &egui::Context, install_root: &std::path::Path) {
     let problems = launch::check(install_root);
 
     // A hard problem stops the launch; Steam not running is reported and
@@ -141,19 +144,22 @@ fn start_game(app: &mut App, install_root: &std::path::Path) {
         return;
     }
 
-    start_game_now(app, install_root);
+    start_game_now(app, ctx, install_root);
 }
 
 /// Starts the game without asking anything further.
 ///
 /// Reached from the play button once the checks have passed, and from
 /// the "start anyway" answer when Steam is not running.
-pub fn start_game_now(app: &mut App, install_root: &std::path::Path) {
+pub fn start_game_now(app: &mut App, ctx: &egui::Context, install_root: &std::path::Path) {
     let cvars = cvar_args(app);
     match launch::play_recof(install_root, &app.settings.launch, &cvars) {
         Ok(pid) => {
             log::info!("ReCoF started as process {pid}");
             app.notice = Some(Notice::good(app.t("launch-starting")));
+            // Only once it really started: a launcher that closes on a
+            // failed launch takes the error message with it.
+            app.step_aside(ctx);
         }
         Err(error @ recof_core::Error::CommandLineTooLong { .. }) => {
             log::error!("starting ReCoF: {error}");
@@ -262,6 +268,9 @@ fn launch_options(app: &mut App, ui: &mut egui::Ui) {
         }
 
         ui.add_space(8.0);
+        if !app.settings.look.show_command_line {
+            return;
+        }
         ui.label(egui::RichText::new(app.t("launch-preview")).strong());
         let args = launch::build(&app.settings.launch, &cvar_args(app));
         let exe = app

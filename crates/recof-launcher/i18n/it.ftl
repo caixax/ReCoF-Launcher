@@ -316,3 +316,50 @@ err-github = GitHub ha risposto con un errore: { $detail }
 err-rate-limited = GitHub sta limitando le richieste di questa connessione. Riprova tra qualche minuto.
 err-no-release = Su questo canale non è ancora stata pubblicata nessuna versione.
 err-command-line-too-long = La riga di comando sarebbe lunga { $length } caratteri e il gioco ne accetta al massimo { $limit }. Accorcia gli argomenti aggiuntivi.
+
+## Impostazioni, a schede
+
+settings-tab-look = Aspetto
+settings-tab-language = Lingua
+settings-tab-updates = Aggiornamenti
+settings-tab-behaviour = Comportamento
+settings-tab-about = Informazioni
+
+## Aspetto
+
+look-title = Aspetto
+look-show-hero = Usa l'immagine di sfondo
+look-hero-dim = Quanto viene scurito lo sfondo
+look-hero-dim-help = Abbastanza perché il testo sopra resti leggibile.
+look-grain = Grana della pellicola
+look-command-line = Mostra la riga di comando nella schermata principale
+
+look-artwork-title = Le tue immagini
+look-artwork-help = L'avviatore non porta con sé nessuna immagine del gioco. Metti le tue in questa cartella e le userà: hero.png per lo sfondo, logo.png per il titolo, icon.png per l'icona della finestra. Restano su questa macchina e non finiscono mai in una pubblicazione.
+look-open-theme = Apri la cartella delle immagini
+look-reload-art = Ricarica le immagini
+look-using-art = Sto usando le tue immagini: { $pieces }
+look-no-art = Nessuna immagine trovata, quindi l'avviatore disegna le proprie.
+
+## Comportamento
+
+behaviour-minimize = Riduci a icona l'avviatore quando parte il gioco
+behaviour-close = Chiudi l'avviatore quando parte il gioco
+behaviour-close-help = Ha la precedenza sulla riduzione a icona.
+
+## Informazioni
+
+about-what = ReCoF Launcher installa, aggiorna e avvia ReCoF, la ricompilazione migliorata di Cry of Fear. Copia la tua installazione di Steam in una cartella che scegli tu e non scrive mai dentro quella di Steam.
+about-made-by = Fatto da { $author }, che fa anche ReCoF.
+about-version = Avviatore { $version }
+about-licence = Licenza MIT. Il codice è su { $url }.
+about-recof = ReCoF è su { $url }.
+about-font = Il titolo è composto in Archivo Black, con licenza SIL Open Font License 1.1.
+about-not-affiliated = Nessun legame con Team Psykskallar. Cry of Fear appartiene ai suoi autori; questo avviatore installa soltanto una ricompilazione fatta dalla tua copia.
+
+## Crediti delle immagini
+
+look-credits-title = Crediti delle immagini
+look-credits-none = Queste immagini sono arrivate senza crediti.
+look-credits-help = Le immagini non fanno parte dell'avviatore. Vengono dalla pubblicazione di ReCoF e appartengono a chi le ha fatte.
+look-forget-art = Togli le immagini

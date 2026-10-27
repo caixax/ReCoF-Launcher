@@ -316,3 +316,50 @@ err-github = GitHub bir hatayla yanıt verdi: { $detail }
 err-rate-limited = GitHub bu bağlantının isteklerini kısıtlıyor. Birkaç dakika sonra yeniden deneyin.
 err-no-release = Bu kanalda henüz hiçbir sürüm yayımlanmadı.
 err-command-line-too-long = Komut satırı { $length } karakter olurdu, oyun en fazla { $limit } karakter kabul ediyor. Ek bağımsız değişkenleri kısaltın.
+
+## Ayarlar, sekmeler hâlinde
+
+settings-tab-look = Görünüm
+settings-tab-language = Dil
+settings-tab-updates = Güncellemeler
+settings-tab-behaviour = Davranış
+settings-tab-about = Hakkında
+
+## Görünüm
+
+look-title = Görünüm
+look-show-hero = Arka plan görselini kullan
+look-hero-dim = Arka plan ne kadar koyultulsun
+look-hero-dim-help = Üstündeki yazı okunur kalacak kadar.
+look-grain = Film greni
+look-command-line = Komut satırını ana ekranda göster
+
+look-artwork-title = Kendi görselleriniz
+look-artwork-help = Araç oyunun hiçbir görselini içermez. Kendi görsellerinizi bu klasöre koyun, onları kullanır: arka plan için hero.png, başlık için logo.png, pencere simgesi için icon.png. Bu makinede kalırlar ve hiçbir sürüme girmezler.
+look-open-theme = Görsel klasörünü aç
+look-reload-art = Görselleri yeniden yükle
+look-using-art = Görselleriniz kullanılıyor: { $pieces }
+look-no-art = Görsel bulunamadı, bu yüzden araç kendi çizdiklerini kullanıyor.
+
+## Davranış
+
+behaviour-minimize = Oyun başlayınca aracı simge durumuna küçült
+behaviour-close = Oyun başlayınca aracı kapat
+behaviour-close-help = Simge durumuna küçültmeye göre önceliklidir.
+
+## Hakkında
+
+about-what = ReCoF Launcher, Cry of Fear'ın geliştirilmiş yeniden derlemesi olan ReCoF'u kurar, günceller ve çalıştırır. Steam kurulumunuzu seçtiğiniz bir klasöre kopyalar ve Steam'inkinin içine asla yazmaz.
+about-made-by = Yapan: { $author }, ReCoF'un kendisini de o yapıyor.
+about-version = Araç { $version }
+about-licence = MIT lisanslı. Kaynak kodu { $url } adresinde.
+about-recof = ReCoF { $url } adresinde.
+about-font = Başlık, SIL Open Font License 1.1 altındaki Archivo Black ile dizildi.
+about-not-affiliated = Team Psykskallar ile bir ilişkisi yoktur. Cry of Fear yazarlarına aittir; bu araç yalnızca kendi kopyanızdan yapılmış bir yeniden derlemeyi kurar.
+
+## Görsel künyesi
+
+look-credits-title = Görsel künyesi
+look-credits-none = Bu görseller künyesiz geldi.
+look-credits-help = Görseller aracın bir parçası değildir. ReCoF sürümünden gelirler ve onları yapanlara aittir.
+look-forget-art = Görselleri kaldır

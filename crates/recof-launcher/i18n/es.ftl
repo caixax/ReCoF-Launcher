@@ -314,3 +314,50 @@ err-github = GitHub ha respondido con un error: { $detail }
 err-rate-limited = GitHub está limitando las peticiones de esta conexión. Inténtalo dentro de unos minutos.
 err-no-release = Todavía no se ha publicado ninguna versión en este canal.
 err-command-line-too-long = La línea de comandos tendría { $length } caracteres y el juego admite como mucho { $limit }. Acorta los argumentos adicionales.
+
+## Ajustes, por pestañas
+
+settings-tab-look = Aspecto
+settings-tab-language = Idioma
+settings-tab-updates = Actualizaciones
+settings-tab-behaviour = Comportamiento
+settings-tab-about = Acerca de
+
+## Aspecto
+
+look-title = Aspecto
+look-show-hero = Usar la imagen de fondo
+look-hero-dim = Cuánto se oscurece el fondo
+look-hero-dim-help = Lo bastante para que el texto de encima se siga leyendo.
+look-grain = Grano de película
+look-command-line = Mostrar la línea de comandos en la pantalla principal
+
+look-artwork-title = Tu propio arte
+look-artwork-help = El lanzador no incluye ninguna imagen del juego. Pon las tuyas en esta carpeta y las usará: hero.png para el fondo, logo.png para el título, icon.png para el icono de la ventana. Se quedan en esta máquina y nunca entran en un release.
+look-open-theme = Abrir la carpeta de arte
+look-reload-art = Recargar el arte
+look-using-art = Usando tu arte: { $pieces }
+look-no-art = No se ha encontrado arte, así que el lanzador dibuja el suyo.
+
+## Comportamiento
+
+behaviour-minimize = Minimizar el lanzador al arrancar el juego
+behaviour-close = Cerrar el lanzador al arrancar el juego
+behaviour-close-help = Tiene prioridad sobre minimizar.
+
+## Acerca de
+
+about-what = ReCoF Launcher instala, actualiza y arranca ReCoF, la recompilación mejorada de Cry of Fear. Copia tu instalación de Steam a una carpeta que elijas tú y nunca escribe dentro de la de Steam.
+about-made-by = Hecho por { $author }, que también hace ReCoF.
+about-version = Lanzador { $version }
+about-licence = Licencia MIT. El código está en { $url }.
+about-recof = ReCoF está en { $url }.
+about-font = El título está compuesto en Archivo Black, con licencia SIL Open Font License 1.1.
+about-not-affiliated = Sin relación con Team Psykskallar. Cry of Fear pertenece a sus autores; este lanzador solo instala una recompilación hecha a partir de tu propia copia.
+
+## Créditos del arte
+
+look-credits-title = Créditos del arte
+look-credits-none = Este arte no vino con créditos.
+look-credits-help = El arte no forma parte del lanzador. Viene del release de ReCoF y es de quien lo hiciera.
+look-forget-art = Quitar el arte

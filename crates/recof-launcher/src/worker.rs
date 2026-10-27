@@ -153,6 +153,10 @@ pub enum Job {
         stamp: String,
     },
 
+    /// Fetch whatever artwork the newest release offers, so a player
+    /// does not have to go and find any.
+    FetchArtwork { app_data: PathBuf, channel: Channel },
+
     /// Create a desktop or start menu shortcut.
     MakeShortcut {
         kind: ShortcutKind,
@@ -211,6 +215,8 @@ pub enum Event {
     Imported(ImportReport),
     ShortcutMade,
     AddedToSteam,
+    /// Artwork arrived, or the release had none.
+    ArtworkFetched(Box<recof_core::artwork::Fetched>),
 
     /// A job failed. The message id is what the user sees; the detail goes
     /// to the log and the bug report.
@@ -645,6 +651,27 @@ fn run(job: Job, cancel: &Arc<AtomicBool>, emit: &dyn Fn(Event)) {
             emit(match outcome {
                 Ok(report) => Event::Imported(report),
                 Err(error) => failed(error),
+            });
+        }
+
+        Job::FetchArtwork { app_data, channel } => {
+            let paths = AppPaths::at(&app_data);
+            let client = GithubClient::new(paths.cache_dir());
+            let outcome = recof_core::artwork::fetch(
+                &client,
+                recof_core::consts::RECOF_REPO,
+                channel,
+                &paths.theme_dir(),
+                cancel,
+            );
+            emit(match outcome {
+                Ok(fetched) => Event::ArtworkFetched(Box::new(fetched)),
+                // No artwork is not a problem worth a dialog: the
+                // launcher draws its own and says nothing.
+                Err(error) => {
+                    log::info!("the artwork could not be fetched: {error}");
+                    Event::ArtworkFetched(Box::default())
+                }
             });
         }
 

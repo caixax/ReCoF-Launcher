@@ -160,6 +160,18 @@ pub struct App {
     /// Whether the install should bring the vanilla saves over. Not a
     /// setting: it only matters while the install wizard is open.
     pub import_on_install: bool,
+
+    /// Which part of the settings is showing.
+    pub settings_tab: crate::screens::tools::SettingsTab,
+
+    /// The pictures in the theme folder, fetched or put there by hand.
+    pub artwork: crate::art::Artwork,
+    /// Who made them, when the release said.
+    pub artwork_credits: Option<String>,
+    /// Whether the fetch has been asked for, so it runs once.
+    pub artwork_requested: bool,
+    /// The grain overlay, generated once at start up.
+    pub grain: crate::brand::Grain,
     /// Whether to make a desktop shortcut once the install finishes.
     pub shortcut_on_install: bool,
 
@@ -198,6 +210,9 @@ pub struct App {
 impl App {
     pub fn new(cc: &eframe::CreationContext<'_>) -> App {
         theme::apply(&cc.egui_ctx);
+        // After the theme, because it replaces the font definitions
+        // and the system fallback has to be set up around it.
+        crate::brand::install_font(&cc.egui_ctx);
 
         let paths = AppPaths::discover().unwrap_or_else(|error| {
             log::error!("LOCALAPPDATA could not be found: {error}");
@@ -251,6 +266,11 @@ impl App {
             measured_for: None,
             installed,
             import_on_install: true,
+            settings_tab: Default::default(),
+            artwork: crate::art::Artwork::default(),
+            artwork_credits: None,
+            artwork_requested: false,
+            grain: crate::brand::Grain::new(&cc.egui_ctx),
             shortcut_on_install: false,
             presence: recof_core::presence::Presence::new(),
             presence_checked: std::time::Instant::now(),
@@ -264,6 +284,20 @@ impl App {
             import_plan: None,
             saved_cvars: None,
         };
+
+        app.artwork.load(&cc.egui_ctx, &app.paths.theme_dir());
+        app.artwork_credits = recof_core::artwork::credits(&app.paths.theme_dir());
+
+        // Nothing in the folder means nobody has been offered the
+        // artwork yet. It comes from the ReCoF release rather than
+        // from this repository, which ships no picture of the game.
+        if !recof_core::artwork::already_present(&app.paths.theme_dir()) {
+            app.artwork_requested = true;
+            app.worker.send_background(Job::FetchArtwork {
+                app_data: app.paths.root().to_path_buf(),
+                channel: app.settings.channel,
+            });
+        }
 
         // An interrupted operation is finished or undone before anything
         // else is allowed to touch the copy.
@@ -348,6 +382,40 @@ impl App {
             .ok()?
             .into_iter()
             .next_back()
+    }
+
+    /// Reads the theme folder again, so a picture dropped in while the
+    /// launcher is open shows up without a restart.
+    pub fn reload_artwork(&mut self, ctx: &egui::Context) {
+        self.artwork.forget();
+        self.artwork.load(ctx, &self.paths.theme_dir());
+    }
+
+    /// The background picture, when there is one and the user wants it.
+    pub fn hero(&self) -> Option<&egui::TextureHandle> {
+        if self.settings.look.show_hero {
+            self.artwork.hero()
+        } else {
+            None
+        }
+    }
+
+    /// The grain, when the setting is on.
+    pub fn grain(&self) -> Option<&crate::brand::Grain> {
+        if self.settings.look.grain {
+            Some(&self.grain)
+        } else {
+            None
+        }
+    }
+
+    /// Gets out of the way once the game is running, if asked to.
+    pub fn step_aside(&self, ctx: &egui::Context) {
+        if self.settings.behaviour.close_on_launch {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+        } else if self.settings.behaviour.minimize_on_launch {
+            ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true));
+        }
     }
 
     /// Shows a translated error.
@@ -545,6 +613,18 @@ impl App {
                     self.t_args("import-done", &[("count", report.copied.to_string())]),
                 ));
             }
+            Event::ArtworkFetched(fetched) => {
+                if !fetched.is_empty() {
+                    log::info!("artwork fetched: {:?}", fetched.written);
+                    self.artwork_credits = fetched
+                        .credits
+                        .clone()
+                        .or_else(|| recof_core::artwork::credits(&self.paths.theme_dir()));
+                    // The textures are loaded on the next frame, which
+                    // is where a context is to hand.
+                    self.artwork.forget();
+                }
+            }
             Event::ShortcutMade => {
                 self.notice = Some(Notice::good(self.t("shortcut-created")));
             }
@@ -605,7 +685,7 @@ impl App {
     }
 
     /// Runs a confirmed action.
-    pub fn run_confirmed(&mut self, action: ConfirmAction) {
+    pub fn run_confirmed(&mut self, action: ConfirmAction, context: Option<&egui::Context>) {
         match action {
             ConfirmAction::CancelInstall => self.worker.cancel(),
             ConfirmAction::Uninstall {
@@ -650,8 +730,10 @@ impl App {
                 }
             }
             ConfirmAction::LaunchAnyway => {
-                if let Some(root) = self.settings.install_path.clone() {
-                    crate::screens::home::start_game_now(self, &root);
+                if let (Some(root), Some(ctx)) =
+                    (self.settings.install_path.clone(), context.cloned())
+                {
+                    crate::screens::home::start_game_now(self, &ctx, &root);
                 }
             }
             ConfirmAction::RestoreBackup { archive } => {
@@ -704,10 +786,20 @@ impl eframe::App for App {
         for event in self.worker.drain() {
             self.handle(event);
         }
+        if !self.artwork.is_loaded() {
+            let ctx = ui.ctx().clone();
+            self.artwork.load(&ctx, &self.paths.theme_dir());
+        }
 
         let ctx = ui.ctx().clone();
+        crate::brand::paint_background(
+            ui,
+            ui.max_rect(),
+            self.hero(),
+            self.settings.look.dim(),
+            self.grain(),
+        );
         egui::Frame::new()
-            .fill(theme::BACKGROUND)
             .inner_margin(egui::Margin::same(20))
             .show(ui, |ui| {
                 ui.set_min_size(ui.available_size());
@@ -800,12 +892,12 @@ impl App {
                 ui.add_space(12.0);
                 ui.horizontal(|ui| {
                     if ui.button(&confirm.confirm_label).clicked() {
-                        self.run_confirmed(confirm.action.clone());
+                        self.run_confirmed(confirm.action.clone(), Some(ctx));
                         open = false;
                     }
                     if let Some((label, action)) = &confirm.alternative {
                         if ui.button(label).clicked() {
-                            self.run_confirmed(action.clone());
+                            self.run_confirmed(action.clone(), Some(ctx));
                             open = false;
                         }
                     }

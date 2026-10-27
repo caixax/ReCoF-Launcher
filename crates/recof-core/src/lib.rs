@@ -4,6 +4,7 @@
 //! [`recof_platform`], so the logic can be tested on any host and a later
 //! Linux port stays a matter of filling in that one crate.
 
+pub mod artwork;
 pub mod backup;
 pub mod changelog;
 pub mod consts;

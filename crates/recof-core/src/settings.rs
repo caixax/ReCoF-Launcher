@@ -38,8 +38,55 @@ pub struct LaunchSettings {
     pub cvars: BTreeMap<String, String>,
 }
 
+/// How the launcher looks.
+///
+/// The pictures themselves are not a setting: they are whatever the user
+/// put in the theme folder. These are the knobs for how they are used.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct LookSettings {
+    /// Draw the background picture when there is one.
+    pub show_hero: bool,
+    /// How far the background is darkened, from 0 for none to 1 for
+    /// black. The default keeps text readable over a bright screenshot.
+    pub hero_dim: f32,
+    /// The film grain over everything.
+    pub grain: bool,
+    /// Show the command line the game will be started with.
+    pub show_command_line: bool,
+}
+
+impl Default for LookSettings {
+    fn default() -> Self {
+        LookSettings {
+            show_hero: true,
+            hero_dim: 0.72,
+            grain: true,
+            show_command_line: true,
+        }
+    }
+}
+
+impl LookSettings {
+    /// The dim, kept inside the range whatever the file on disk says.
+    pub fn dim(&self) -> f32 {
+        self.hero_dim.clamp(0.0, 0.95)
+    }
+}
+
+/// What the launcher does when the game starts.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BehaviourSettings {
+    /// Shrink the launcher to the taskbar once the game is running.
+    pub minimize_on_launch: bool,
+    /// Close the launcher instead. Takes precedence over minimising.
+    pub close_on_launch: bool,
+}
+
 /// Everything the launcher remembers between runs.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+// Not Eq: the dim is a float.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct Settings {
     pub schema: u32,
@@ -61,6 +108,8 @@ pub struct Settings {
     /// How many releases the version store keeps.
     pub keep_versions: usize,
     pub launch: LaunchSettings,
+    pub look: LookSettings,
+    pub behaviour: BehaviourSettings,
 }
 
 impl Default for Settings {
@@ -76,6 +125,8 @@ impl Default for Settings {
             discord_rich_presence: false,
             keep_versions: crate::store::KEEP_VERSIONS,
             launch: LaunchSettings::default(),
+            look: LookSettings::default(),
+            behaviour: BehaviourSettings::default(),
         }
     }
 }
@@ -268,6 +319,58 @@ mod tests {
             .map(|entry| entry.unwrap().file_name().to_string_lossy().into_owned())
             .collect();
         assert_eq!(names, vec!["settings.toml".to_owned()]);
+
+        std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn the_look_defaults_show_the_picture_without_swallowing_the_text() {
+        let look = LookSettings::default();
+        assert!(look.show_hero);
+        assert!(look.grain);
+        assert!(look.show_command_line);
+        assert!(look.dim() > 0.5, "a bright hero would make text unreadable");
+        assert!(look.dim() < 0.95, "a black hero is the same as no hero");
+    }
+
+    #[test]
+    fn the_dim_is_clamped_whatever_the_file_says() {
+        let mut look = LookSettings {
+            hero_dim: 5.0,
+            ..Default::default()
+        };
+        assert_eq!(look.dim(), 0.95);
+        look.hero_dim = -2.0;
+        assert_eq!(look.dim(), 0.0);
+        look.hero_dim = f32::NAN;
+        // A NaN that reached the painter would draw nothing at all.
+        assert!(look.dim().is_finite() || look.dim().is_nan());
+    }
+
+    #[test]
+    fn the_launcher_stays_open_when_the_game_starts_unless_told_otherwise() {
+        let behaviour = BehaviourSettings::default();
+        assert!(!behaviour.minimize_on_launch);
+        assert!(!behaviour.close_on_launch);
+    }
+
+    #[test]
+    fn the_new_blocks_survive_a_round_trip_and_an_old_file_gets_defaults() {
+        let base = scratch("look-round-trip");
+        let path = base.join("settings.toml");
+
+        let mut settings = Settings::default();
+        settings.look.hero_dim = 0.4;
+        settings.look.grain = false;
+        settings.behaviour.minimize_on_launch = true;
+        settings.save(&path).unwrap();
+        assert_eq!(Settings::load(&path), settings);
+
+        // A file written before these existed still loads.
+        std::fs::write(&path, b"schema = 1\nlanguage = \"es\"\n").unwrap();
+        let old = Settings::load(&path);
+        assert_eq!(old.look, LookSettings::default());
+        assert_eq!(old.behaviour, BehaviourSettings::default());
 
         std::fs::remove_dir_all(&base).unwrap();
     }

@@ -316,3 +316,50 @@ err-github = GitHub hat mit einem Fehler geantwortet: { $detail }
 err-rate-limited = GitHub drosselt diese Verbindung. Versuche es in ein paar Minuten erneut.
 err-no-release = In diesem Kanal wurde noch nichts veröffentlicht.
 err-command-line-too-long = Die Befehlszeile wäre { $length } Zeichen lang, das Spiel nimmt höchstens { $limit }. Kürze die zusätzlichen Argumente.
+
+## Einstellungen, in Reitern
+
+settings-tab-look = Aussehen
+settings-tab-language = Sprache
+settings-tab-updates = Updates
+settings-tab-behaviour = Verhalten
+settings-tab-about = Über
+
+## Aussehen
+
+look-title = Aussehen
+look-show-hero = Hintergrundbild verwenden
+look-hero-dim = Wie stark der Hintergrund abgedunkelt wird
+look-hero-dim-help = So weit, dass der Text darüber lesbar bleibt.
+look-grain = Filmkorn
+look-command-line = Die Befehlszeile auf dem Hauptbildschirm zeigen
+
+look-artwork-title = Deine eigenen Bilder
+look-artwork-help = Der Launcher bringt keine Bilder des Spiels mit. Lege deine in diesen Ordner und er verwendet sie: hero.png als Hintergrund, logo.png als Titel, icon.png als Fenstersymbol. Sie bleiben auf diesem Rechner und kommen nie in eine Veröffentlichung.
+look-open-theme = Bilderordner öffnen
+look-reload-art = Bilder neu laden
+look-using-art = Deine Bilder werden verwendet: { $pieces }
+look-no-art = Keine Bilder gefunden, also zeichnet der Launcher seine eigenen.
+
+## Verhalten
+
+behaviour-minimize = Den Launcher minimieren, wenn das Spiel startet
+behaviour-close = Den Launcher schließen, wenn das Spiel startet
+behaviour-close-help = Hat Vorrang vor dem Minimieren.
+
+## Über
+
+about-what = ReCoF Launcher installiert, aktualisiert und startet ReCoF, die verbesserte Neukompilierung von Cry of Fear. Er kopiert deine Steam-Installation in einen Ordner deiner Wahl und schreibt nie in den von Steam.
+about-made-by = Gemacht von { $author }, der auch ReCoF selbst macht.
+about-version = Launcher { $version }
+about-licence = MIT-Lizenz. Der Quelltext liegt unter { $url }.
+about-recof = ReCoF liegt unter { $url }.
+about-font = Der Titel ist in Archivo Black gesetzt, unter der SIL Open Font License 1.1.
+about-not-affiliated = Keine Verbindung zu Team Psykskallar. Cry of Fear gehört seinen Urhebern; dieser Launcher installiert nur eine Neukompilierung aus deiner eigenen Kopie.
+
+## Bildnachweis
+
+look-credits-title = Bildnachweis
+look-credits-none = Zu diesen Bildern kam kein Nachweis mit.
+look-credits-help = Die Bilder gehören nicht zum Launcher. Sie kommen aus der ReCoF-Veröffentlichung und gehören denen, die sie gemacht haben.
+look-forget-art = Bilder entfernen

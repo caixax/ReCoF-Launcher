@@ -315,3 +315,50 @@ err-github = GitHub 返回了错误：{ $detail }
 err-rate-limited = GitHub 正在限制此连接的请求频率。请过几分钟再试。
 err-no-release = 这个通道上还没有发布任何版本。
 err-command-line-too-long = 命令行将有 { $length } 个字符，而游戏最多只接受 { $limit } 个。请缩短额外参数。
+
+## 设置，分页
+
+settings-tab-look = 外观
+settings-tab-language = 语言
+settings-tab-updates = 更新
+settings-tab-behaviour = 行为
+settings-tab-about = 关于
+
+## 外观
+
+look-title = 外观
+look-show-hero = 使用背景图片
+look-hero-dim = 背景压暗的程度
+look-hero-dim-help = 压到上面的文字仍然看得清为止。
+look-grain = 胶片颗粒
+look-command-line = 在主界面显示命令行
+
+look-artwork-title = 你自己的图片
+look-artwork-help = 本程序不附带任何游戏图片。把你自己的放进这个文件夹就会使用：hero.png 作背景，logo.png 作标题，icon.png 作窗口图标。它们只留在这台机器上，绝不会进入任何发行版。
+look-open-theme = 打开图片文件夹
+look-reload-art = 重新载入图片
+look-using-art = 正在使用你的图片：{ $pieces }
+look-no-art = 没有找到图片，所以由程序自己绘制。
+
+## 行为
+
+behaviour-minimize = 游戏启动时最小化本程序
+behaviour-close = 游戏启动时关闭本程序
+behaviour-close-help = 优先于最小化。
+
+## 关于
+
+about-what = ReCoF Launcher 负责安装、更新并启动 ReCoF，也就是 Cry of Fear 的改进版重新编译。它把你的 Steam 安装复制到你选定的文件夹，绝不会写入 Steam 的那一份。
+about-made-by = 由 { $author } 制作，ReCoF 本身也是他做的。
+about-version = 启动程序 { $version }
+about-licence = MIT 许可。源码在 { $url }。
+about-recof = ReCoF 在 { $url }。
+about-font = 标题使用 Archivo Black 排版，采用 SIL Open Font License 1.1 许可。
+about-not-affiliated = 与 Team Psykskallar 无关。Cry of Fear 归其作者所有；本程序只是从你自己的副本安装一份重新编译。
+
+## 图片来源
+
+look-credits-title = 图片来源
+look-credits-none = 这批图片没有附带来源说明。
+look-credits-help = 图片不属于本启动程序。它们来自 ReCoF 的发行版，版权归制作者所有。
+look-forget-art = 移除图片
