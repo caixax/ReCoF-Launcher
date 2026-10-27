@@ -7,6 +7,7 @@ mod art;
 mod brand;
 mod bundled;
 mod i18n;
+mod icon;
 mod markdown;
 mod screens;
 mod theme;

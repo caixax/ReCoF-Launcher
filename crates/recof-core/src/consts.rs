@@ -44,10 +44,19 @@ pub const LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Discord application id for Rich Presence.
 ///
 /// Empty until somebody creates the application at
-/// <https://discord.com/developers/applications> and pastes its id
-/// here. While it is empty the setting reports itself as unavailable
-/// rather than silently doing nothing. Nothing else depends on it.
-pub const DISCORD_APP_ID: &str = "";
+/// <https://discord.com/developers/applications> and gives the launcher
+/// its id. While it is empty the presence reports itself as unavailable
+/// and the setting says so, rather than silently doing nothing.
+///
+/// An application id is public: it is handed to every Discord client
+/// that sees the presence, and it is not a secret or a token. It can be
+/// set here, or passed as `RECOF_DISCORD_APP_ID` at build time so a
+/// fork does not have to edit this file. The build script watches that
+/// variable, so changing it rebuilds.
+pub const DISCORD_APP_ID: &str = match option_env!("RECOF_DISCORD_APP_ID") {
+    Some(id) => id,
+    None => "",
+};
 
 /// Steam URL that starts retail Cry of Fear.
 pub const VANILLA_LAUNCH_URL: &str = "steam://rungameid/223710";

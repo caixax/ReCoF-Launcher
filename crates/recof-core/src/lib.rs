@@ -19,6 +19,7 @@ pub mod log_file;
 pub mod manifest;
 pub mod net;
 pub mod paths;
+pub mod playtime;
 pub mod presence;
 pub mod settings;
 pub mod space;

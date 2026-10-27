@@ -340,13 +340,28 @@ fn behaviour_tab(app: &mut App, ui: &mut egui::Ui) {
         ui.set_width(ui.available_width());
         let discord_label = app.t("settings-discord");
         let discord_help = app.t("settings-discord-help");
-        if ui
-            .checkbox(&mut app.settings.discord_rich_presence, discord_label)
-            .changed()
-        {
-            app.save_settings();
-        }
+
+        // A build with no Discord application id compiled in can never
+        // show a presence. Leaving the box tickable would mean a setting
+        // that is on and does nothing, which is the hardest kind of
+        // thing to debug from the other side of a bug report.
+        let configured = recof_core::presence::Presence::is_configured();
+        ui.add_enabled_ui(configured, |ui| {
+            if ui
+                .checkbox(&mut app.settings.discord_rich_presence, discord_label)
+                .changed()
+            {
+                app.save_settings();
+            }
+        });
         theme::help(ui, &discord_help);
+        if !configured {
+            ui.label(
+                egui::RichText::new(app.t("settings-discord-unavailable"))
+                    .size(12.0)
+                    .color(theme::WARN),
+            );
+        }
     });
 
     ui.add_space(10.0);
