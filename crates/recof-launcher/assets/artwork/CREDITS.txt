@@ -1,0 +1,13 @@
+# Artwork credits.
+#
+# One line per picture, naming who made it. Lines starting with a hash
+# are notes like this one and never reach the screen; everything else is
+# shown in Settings under Appearance and in About.
+#
+# For example:
+#
+#   hero.png  by Somebody, from where you got it
+#   logo.png  by Somebody Else
+#
+# The folder ships empty, so this file ships with nothing but these
+# notes. Add a picture, add its line.

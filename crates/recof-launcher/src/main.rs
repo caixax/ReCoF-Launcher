@@ -5,6 +5,7 @@
 mod app;
 mod art;
 mod brand;
+mod bundled;
 mod i18n;
 mod markdown;
 mod screens;
@@ -34,7 +35,8 @@ fn main() -> eframe::Result<()> {
         if let Err(error) = art::prepare(&paths.theme_dir()) {
             log::warn!("the theme folder could not be prepared: {error}");
         }
-        if let Some(icon) = art::window_icon(&paths.theme_dir()) {
+        // The user's icon wins over the one the repository carries.
+        if let Some(icon) = art::window_icon(&paths.theme_dir()).or_else(bundled::icon) {
             viewport = viewport.with_icon(icon);
         }
     }

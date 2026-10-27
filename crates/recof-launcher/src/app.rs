@@ -164,6 +164,9 @@ pub struct App {
     /// Which part of the settings is showing.
     pub settings_tab: crate::screens::tools::SettingsTab,
 
+    /// Artwork the repository carries, when it carries any.
+    pub bundled_hero: Option<egui::TextureHandle>,
+    pub bundled_logo: Option<egui::TextureHandle>,
     /// The pictures in the theme folder, fetched or put there by hand.
     pub artwork: crate::art::Artwork,
     /// Who made them, when the release said.
@@ -267,6 +270,8 @@ impl App {
             installed,
             import_on_install: true,
             settings_tab: Default::default(),
+            bundled_hero: crate::bundled::hero(&cc.egui_ctx),
+            bundled_logo: crate::bundled::logo(&cc.egui_ctx),
             artwork: crate::art::Artwork::default(),
             artwork_credits: None,
             artwork_requested: false,
@@ -286,12 +291,13 @@ impl App {
         };
 
         app.artwork.load(&cc.egui_ctx, &app.paths.theme_dir());
-        app.artwork_credits = recof_core::artwork::credits(&app.paths.theme_dir());
+        app.artwork_credits =
+            recof_core::artwork::credits(&app.paths.theme_dir()).or_else(crate::bundled::credits);
 
         // Nothing in the folder means nobody has been offered the
         // artwork yet. It comes from the ReCoF release rather than
         // from this repository, which ships no picture of the game.
-        if !recof_core::artwork::already_present(&app.paths.theme_dir()) {
+        if !crate::bundled::any() && !recof_core::artwork::already_present(&app.paths.theme_dir()) {
             app.artwork_requested = true;
             app.worker.send_background(Job::FetchArtwork {
                 app_data: app.paths.root().to_path_buf(),
@@ -394,10 +400,17 @@ impl App {
     /// The background picture, when there is one and the user wants it.
     pub fn hero(&self) -> Option<&egui::TextureHandle> {
         if self.settings.look.show_hero {
-            self.artwork.hero()
+            self.artwork.hero().or(self.bundled_hero.as_ref())
         } else {
             None
         }
+    }
+
+    /// Whichever wordmark should be drawn: the user's, then the one
+    /// the repository carries, then none, which leaves the type to be
+    /// laid out live.
+    pub fn wordmark(&self) -> Option<&egui::TextureHandle> {
+        self.artwork.logo().or(self.bundled_logo.as_ref())
     }
 
     /// The grain, when the setting is on.

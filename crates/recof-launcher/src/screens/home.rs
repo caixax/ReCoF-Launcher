@@ -81,7 +81,7 @@ fn top_bar(app: &mut App, ui: &mut egui::Ui) {
             }
 
             ui.with_layout(egui::Layout::left_to_right(egui::Align::Min), |ui| {
-                let logo = app.artwork.logo().cloned();
+                let logo = app.wordmark().cloned();
                 crate::brand::wordmark(ui, logo.as_ref(), width);
             });
         });

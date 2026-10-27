@@ -362,7 +362,7 @@ fn about_tab(app: &mut App, ui: &mut egui::Ui) {
     theme::card(ui, |ui| {
         ui.set_width(ui.available_width());
 
-        let logo = app.artwork.logo().cloned();
+        let logo = app.wordmark().cloned();
         let width = ui.available_width();
         crate::brand::wordmark(ui, logo.as_ref(), width);
 
