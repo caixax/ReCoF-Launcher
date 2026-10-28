@@ -378,3 +378,5 @@ home-playtime-none = 暂无
 home-playtime-minutes = { $minutes } 分钟
 home-playtime-hours = { $hours } 小时 { $minutes } 分钟
 settings-discord-unavailable = 此版本没有 Discord 应用程序 ID，因此无法显示状态。
+updates-check-title = 检查更新
+updates-check-now = 立即检查

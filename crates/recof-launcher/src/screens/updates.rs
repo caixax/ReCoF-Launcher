@@ -34,6 +34,49 @@ pub fn check_now(app: &mut App) {
     });
 }
 
+/// What the last check found, in one line.
+///
+/// Shown under the check button, so pressing it says something even
+/// when the answer is that there is nothing new.
+pub fn last_result(app: &mut App, ui: &mut egui::Ui) {
+    if app.update_checking {
+        return;
+    }
+    if app.updates.offline {
+        ui.label(
+            egui::RichText::new(app.t("home-offline"))
+                .size(12.0)
+                .color(theme::WARN),
+        );
+        return;
+    }
+    if !app.update_check_requested {
+        return;
+    }
+
+    match (&app.updates.launcher, &app.updates.recof) {
+        (None, None) => ui.label(
+            egui::RichText::new(app.t("home-up-to-date"))
+                .size(12.0)
+                .color(theme::GOOD),
+        ),
+        (launcher, recof) => {
+            let text = match (launcher, recof) {
+                (Some(available), _) => app.t_args(
+                    "home-launcher-update-available",
+                    &[("version", available.version.to_string())],
+                ),
+                (None, Some(available)) => app.t_args(
+                    "home-update-available",
+                    &[("version", available.version.to_string())],
+                ),
+                (None, None) => unreachable!("the empty case is handled above"),
+            };
+            ui.label(egui::RichText::new(text).size(12.0).color(theme::TEXT))
+        }
+    };
+}
+
 /// The line on the main screen saying where things stand.
 pub fn status_line(app: &mut App, ui: &mut egui::Ui) {
     if app.updates.offline {

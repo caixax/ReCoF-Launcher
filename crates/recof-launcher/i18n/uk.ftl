@@ -378,3 +378,5 @@ home-playtime-none = Поки нічого
 home-playtime-minutes = { $minutes } хв
 home-playtime-hours = { $hours } год { $minutes } хв
 settings-discord-unavailable = У цій збірці немає ідентифікатора застосунку Discord, тому статус показати не можна.
+updates-check-title = Перевірка оновлень
+updates-check-now = Перевірити зараз

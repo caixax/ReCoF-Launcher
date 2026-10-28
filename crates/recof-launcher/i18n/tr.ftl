@@ -379,3 +379,5 @@ home-playtime-none = Henüz yok
 home-playtime-minutes = { $minutes } dk
 home-playtime-hours = { $hours } sa { $minutes } dk
 settings-discord-unavailable = Bu yapıda Discord uygulama kimliği yok, bu yüzden durum gösterilemez.
+updates-check-title = Güncelleme denetimi
+updates-check-now = Şimdi denetle

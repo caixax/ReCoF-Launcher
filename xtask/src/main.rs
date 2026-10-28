@@ -12,6 +12,7 @@ mod dashes;
 mod detect;
 mod release;
 mod smoke;
+mod updates;
 
 const USAGE: &str = "\
 ReCoF Launcher release tooling
@@ -29,6 +30,10 @@ Commands:
                         Build the NSIS installer for the launcher
   hash-table --from <dir>
                         Hash the in scope files of a real install
+  check-updates [--repo <owner/name>]
+                        Ask the real GitHub what the launcher would see on
+                        each channel, and check the signature over each
+                        manifest against the key this build trusts
   smoke --dest <dir> [--channel beta|stable] [--keep]
                         Install the newest published release into <dir> from
                         the real game, verify, repair and uninstall it, and
@@ -49,6 +54,7 @@ fn main() -> ExitCode {
         "pack-installer" => release::pack_installer(&args, &repo_root()),
         "hash-table" => release::hash_table(&args, &repo_root()),
         "smoke" => smoke::run(&args),
+        "check-updates" => updates::run(&args),
         "help" | "-h" | "--help" => {
             print!("{USAGE}");
             Ok(())

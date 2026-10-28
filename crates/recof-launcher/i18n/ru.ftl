@@ -378,3 +378,5 @@ home-playtime-none = Пока ничего
 home-playtime-minutes = { $minutes } мин
 home-playtime-hours = { $hours } ч { $minutes } мин
 settings-discord-unavailable = В этой сборке нет идентификатора приложения Discord, поэтому статус показать нельзя.
+updates-check-title = Проверка обновлений
+updates-check-now = Проверить сейчас

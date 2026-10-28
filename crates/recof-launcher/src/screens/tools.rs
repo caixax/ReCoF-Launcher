@@ -282,6 +282,31 @@ fn updates_tab(app: &mut App, ui: &mut egui::Ui) {
     ui.add_space(10.0);
     theme::card(ui, |ui| {
         ui.set_width(ui.available_width());
+        ui.label(egui::RichText::new(app.t("updates-check-title")).strong());
+        ui.add_space(6.0);
+
+        // A check on start is not the same as being able to ask for one:
+        // a release published while the launcher was open was invisible
+        // until it was restarted.
+        ui.horizontal(|ui| {
+            let busy = app.update_checking;
+            let label = app.t("updates-check-now");
+            ui.add_enabled_ui(!busy, |ui| {
+                if ui.button(label).clicked() {
+                    crate::screens::updates::check_now(app);
+                }
+            });
+            if busy {
+                ui.spinner();
+                theme::help(ui, &app.t("home-checking"));
+            }
+        });
+        crate::screens::updates::last_result(app, ui);
+    });
+
+    ui.add_space(10.0);
+    theme::card(ui, |ui| {
+        ui.set_width(ui.available_width());
         let updates_label = app.t("settings-check-updates");
         let keep_label = app.t("settings-keep-versions");
         let mut changed = false;

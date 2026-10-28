@@ -271,17 +271,26 @@ fn more_menu(app: &mut App, ui: &mut egui::Ui) {
 
     let vanilla = app.t("home-play-vanilla");
     let options = app.t("launch-options-title");
+    let check = app.t("updates-check-now");
+    let busy = app.update_checking;
     let mut play_vanilla = false;
     let mut open_options = false;
+    let mut check_updates = false;
 
     egui::Popup::menu(&button).show(|ui| {
-        ui.set_min_width(190.0);
+        ui.set_min_width(200.0);
         play_vanilla = ui.button(vanilla).clicked();
         open_options = ui.button(options).clicked();
+        ui.add_enabled_ui(!busy, |ui| {
+            check_updates = ui.button(check).clicked();
+        });
     });
 
     if open_options {
         app.screen = Screen::LaunchOptions;
+    }
+    if check_updates {
+        crate::screens::updates::check_now(app);
     }
     if play_vanilla {
         if let Err(error) = launch::play_vanilla() {

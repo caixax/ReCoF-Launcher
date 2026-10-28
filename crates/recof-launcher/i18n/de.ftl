@@ -379,3 +379,5 @@ home-playtime-none = Noch nichts
 home-playtime-minutes = { $minutes } Min
 home-playtime-hours = { $hours } Std { $minutes } Min
 settings-discord-unavailable = Dieser Build hat keine Discord Anwendungs ID, daher kann die Präsenz nicht angezeigt werden.
+updates-check-title = Nach Updates suchen
+updates-check-now = Jetzt suchen

@@ -379,3 +379,5 @@ home-playtime-none = Rien pour l'instant
 home-playtime-minutes = { $minutes } min
 home-playtime-hours = { $hours } h { $minutes } min
 settings-discord-unavailable = Cette version n'a pas d'identifiant d'application Discord, la présence ne peut donc pas s'afficher.
+updates-check-title = Recherche de mises à jour
+updates-check-now = Vérifier maintenant
