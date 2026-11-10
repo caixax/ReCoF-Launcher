@@ -100,7 +100,7 @@ impl Artwork {
 
 fn load_piece(ctx: &egui::Context, theme_dir: &Path, piece: Piece) -> Option<TextureHandle> {
     let path = find(theme_dir, piece)?;
-    match decode(&path) {
+    match decode(&path).map(|image| fit_to_texture(ctx, image)) {
         Ok(image) => {
             log::info!(
                 "using {} for the {}, {} by {}",
@@ -127,6 +127,47 @@ pub fn find(theme_dir: &Path, piece: Piece) -> Option<PathBuf> {
         .iter()
         .map(|name| theme_dir.join(name))
         .find(|path| path.is_file())
+}
+
+/// Shrinks a picture larger than the graphics driver takes as one
+/// texture, keeping its shape.
+///
+/// egui panics on an upload past that size, and some drivers stop at
+/// 2048 pixels a side (older or integrated GPUs, remote desktop), so the
+/// bundled 2560 pixel hero stopped the launcher from starting there.
+pub fn fit_to_texture(ctx: &egui::Context, image: ColorImage) -> ColorImage {
+    let max = ctx.input(|input| input.max_texture_side);
+    let [width, height] = image.size;
+    if max == 0 || (width <= max && height <= max) {
+        return image;
+    }
+
+    let Some(rgba) = image::RgbaImage::from_raw(
+        width as u32,
+        height as u32,
+        image
+            .pixels
+            .iter()
+            .flat_map(|pixel| pixel.to_srgba_unmultiplied())
+            .collect(),
+    ) else {
+        return image;
+    };
+    let scaled = image::DynamicImage::ImageRgba8(rgba).resize(
+        max as u32,
+        max as u32,
+        image::imageops::FilterType::Triangle,
+    );
+    log::info!(
+        "a {width} by {height} picture is scaled to {} by {} for the graphics driver's {max} pixel textures",
+        scaled.width(),
+        scaled.height()
+    );
+    let scaled = scaled.to_rgba8();
+    ColorImage::from_rgba_unmultiplied(
+        [scaled.width() as usize, scaled.height() as usize],
+        scaled.as_raw(),
+    )
 }
 
 /// Decodes a picture into something egui can upload.

@@ -112,6 +112,7 @@ fn texture(ctx: &egui::Context, name: &str, bytes: &[u8]) -> Option<TextureHandl
         rgba.width(),
         rgba.height()
     );
+    let image = crate::art::fit_to_texture(ctx, image);
     Some(ctx.load_texture(name, image, TextureOptions::LINEAR))
 }
 
