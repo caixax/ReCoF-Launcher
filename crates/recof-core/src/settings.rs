@@ -107,6 +107,9 @@ pub struct Settings {
     pub discord_rich_presence: bool,
     /// How many releases the version store keeps.
     pub keep_versions: usize,
+    /// A launcher version the user chose to skip, so its window does not
+    /// come back on every start. A newer one is offered again.
+    pub skipped_launcher_version: Option<String>,
     pub launch: LaunchSettings,
     pub look: LookSettings,
     pub behaviour: BehaviourSettings,
@@ -124,6 +127,7 @@ impl Default for Settings {
             check_updates_on_start: true,
             discord_rich_presence: false,
             keep_versions: crate::store::KEEP_VERSIONS,
+            skipped_launcher_version: None,
             launch: LaunchSettings::default(),
             look: LookSettings::default(),
             behaviour: BehaviourSettings::default(),
@@ -239,6 +243,7 @@ mod tests {
             intro_seen: true,
             install_path: Some(PathBuf::from(r"D:\Librería Steam\ReCoF")),
             channel: Channel::Beta,
+            skipped_launcher_version: Some("1.0.2".to_owned()),
             ..Default::default()
         };
         settings.launch.width = Some(1920);

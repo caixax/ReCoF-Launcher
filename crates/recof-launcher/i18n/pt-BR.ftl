@@ -124,6 +124,9 @@ install-release-try-beta = Ainda não há nada publicado no canal estável. Test
 
 home-play = Jogar ReCoF
 home-play-vanilla = Jogar o original
+home-update-to = Atualizar para { $version }
+home-play-without-update = Jogar sem atualizar
+home-launcher-update-short = Inicializador { $version } disponível
 home-no-install = O ReCoF ainda não está instalado
 home-install-now = Instalar o ReCoF
 home-checking = Procurando atualizações...
@@ -157,6 +160,19 @@ launch-cvars-title = Opções do ReCoF
 launch-cvars-none = Esta versão do ReCoF não traz opções próprias.
 launch-cvars-from-release = Vêm da versão do ReCoF que você tem instalada.
 launch-cvars-defaults = Voltar aos valores padrão
+options-title = Opções
+options-section-display = Tela
+options-section-advanced = Avançado
+options-group-other = Outras
+options-group-gameplay = Jogabilidade
+options-group-movement = Movimento
+options-group-hud = HUD
+options-group-input = Controles
+options-group-performance = Desempenho
+options-group-spray = Spray
+options-group-crosshair = Mira
+options-group-viewmodel = Modelo da arma
+options-group-startup = Inicialização
 
 ## Atualizações
 
@@ -167,6 +183,9 @@ update-changelog = O que mudou
 update-no-changelog = Esta versão não tem notas.
 update-install = Atualizar agora
 update-later = Depois
+update-skip-version = Pular esta versão
+update-launcher-ready = O inicializador { $version } está pronto
+update-restart-now = Reiniciar agora
 update-downloading = Baixando { $name }
 update-verifying = Conferindo a assinatura e os hashes
 update-extracting = Descompactando

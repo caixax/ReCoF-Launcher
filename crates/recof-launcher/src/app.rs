@@ -204,6 +204,14 @@ pub struct App {
     /// Set once a newer launcher has been written to disk, so the user
     /// can be asked to restart.
     pub self_update_ready: Option<recof_core::version::Version>,
+    /// Whether the window offering a launcher update is open.
+    pub launcher_popup: bool,
+    /// Whether the window asking to restart into the new launcher is open.
+    pub restart_popup: bool,
+    /// Whether the window with what changed in the ReCoF update is open.
+    pub recof_notes_popup: bool,
+    /// The section of the options on the main screen.
+    pub options_section: String,
 
     /// The backups there are, once they have been listed.
     pub backups: Vec<recof_core::backup::Backup>,
@@ -297,6 +305,10 @@ impl App {
             update_checking: false,
             install_file: None,
             self_update_ready: None,
+            launcher_popup: false,
+            restart_popup: false,
+            recof_notes_popup: false,
+            options_section: String::new(),
             backups: Vec::new(),
             backups_listed: false,
             import_plan: None,
@@ -592,6 +604,14 @@ impl App {
             Event::UpdatesChecked(found) => {
                 self.updates = *found;
                 self.update_checking = false;
+                // A launcher update opens its window at once, unless the
+                // user skipped that version.
+                if let Some(available) = &self.updates.launcher {
+                    let version = available.version.to_string();
+                    if self.settings.skipped_launcher_version.as_deref() != Some(version.as_str()) {
+                        self.launcher_popup = true;
+                    }
+                }
             }
             Event::Updated(state) => {
                 let version = state.version.to_string();
@@ -607,7 +627,8 @@ impl App {
                 self.progress = None;
                 self.self_update_ready = Some(version);
                 self.updates.launcher = None;
-                self.notice = Some(Notice::good(self.t("update-launcher-restart")));
+                self.launcher_popup = false;
+                self.restart_popup = true;
             }
             Event::BackedUp(made) => {
                 self.progress = None;
@@ -832,6 +853,7 @@ impl eframe::App for App {
                 self.draw(ui);
             });
 
+        screens::updates::popups(self, &ctx);
         self.draw_confirm(&ctx);
         self.watch_game();
     }
@@ -936,6 +958,15 @@ impl App {
             Screen::Settings => screens::tools::settings(self, ui),
             Screen::Maintenance => screens::tools::maintenance(self, ui),
             Screen::BugReport => screens::tools::bug_report(self, ui),
+        }
+
+        // The main screen shows its progress under the play buttons and the
+        // install has a screen of its own; the others show it here.
+        if matches!(
+            self.screen,
+            Screen::Settings | Screen::Maintenance | Screen::BugReport
+        ) {
+            screens::updates::progress(self, ui);
         }
 
         if let Some(notice) = self.notice.clone() {

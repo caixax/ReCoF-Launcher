@@ -123,6 +123,9 @@ install-release-try-beta = 稳定通道上还没有发布任何内容。测试�
 
 home-play = 开始 ReCoF
 home-play-vanilla = 开始原版
+home-update-to = 更新到 { $version }
+home-play-without-update = 不更新直接开始
+home-launcher-update-short = 启动程序 { $version } 可用
 home-no-install = 尚未安装 ReCoF
 home-install-now = 安装 ReCoF
 home-checking = 正在检查更新...
@@ -156,6 +159,19 @@ launch-cvars-title = ReCoF 选项
 launch-cvars-none = 这个版本的 ReCoF 没有自己的选项。
 launch-cvars-from-release = 它们来自你已安装的 ReCoF 版本。
 launch-cvars-defaults = 恢复默认值
+options-title = 选项
+options-section-display = 显示
+options-section-advanced = 高级
+options-group-other = 其他
+options-group-gameplay = 玩法
+options-group-movement = 移动
+options-group-hud = 界面
+options-group-input = 输入
+options-group-performance = 性能
+options-group-spray = 喷漆
+options-group-crosshair = 准星
+options-group-viewmodel = 武器模型
+options-group-startup = 启动
 
 ## 更新
 
@@ -166,6 +182,9 @@ update-changelog = 更新内容
 update-no-changelog = 这个版本没有说明。
 update-install = 立即更新
 update-later = 稍后
+update-skip-version = 跳过此版本
+update-launcher-ready = 启动程序 { $version } 已就绪
+update-restart-now = 立即重启
 update-downloading = 正在下载 { $name }
 update-verifying = 正在校验签名和哈希
 update-extracting = 正在解压

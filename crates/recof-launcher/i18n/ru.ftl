@@ -123,6 +123,9 @@ install-release-try-beta = В стабильном канале пока нич�
 
 home-play = Играть в ReCoF
 home-play-vanilla = Играть в оригинал
+home-update-to = Обновить до { $version }
+home-play-without-update = Играть без обновления
+home-launcher-update-short = Доступна программа { $version }
 home-no-install = ReCoF ещё не установлен
 home-install-now = Установить ReCoF
 home-checking = Проверка обновлений...
@@ -156,6 +159,19 @@ launch-cvars-title = Параметры ReCoF
 launch-cvars-none = В этой версии ReCoF нет собственных параметров.
 launch-cvars-from-release = Они приходят из установленной у вас версии ReCoF.
 launch-cvars-defaults = Вернуть значения по умолчанию
+options-title = Настройки
+options-section-display = Экран
+options-section-advanced = Дополнительно
+options-group-other = Прочее
+options-group-gameplay = Игровой процесс
+options-group-movement = Движение
+options-group-hud = Интерфейс
+options-group-input = Управление
+options-group-performance = Производительность
+options-group-spray = Граффити
+options-group-crosshair = Прицел
+options-group-viewmodel = Модель оружия
+options-group-startup = Запуск
 
 ## Обновления
 
@@ -166,6 +182,9 @@ update-changelog = Что изменилось
 update-no-changelog = У этой версии нет описания изменений.
 update-install = Обновить сейчас
 update-later = Позже
+update-skip-version = Пропустить эту версию
+update-launcher-ready = Программа { $version } готова
+update-restart-now = Перезапустить
 update-downloading = Загрузка { $name }
 update-verifying = Проверка подписи и контрольных сумм
 update-extracting = Распаковка

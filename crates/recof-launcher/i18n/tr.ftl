@@ -124,6 +124,9 @@ install-release-try-beta = Kararlı kanalda henüz bir şey yayımlanmadı. Test
 
 home-play = ReCoF oyna
 home-play-vanilla = Özgün sürümü oyna
+home-update-to = { $version } sürümüne güncelle
+home-play-without-update = Güncellemeden oyna
+home-launcher-update-short = Araç { $version } hazır
 home-no-install = ReCoF henüz kurulu değil
 home-install-now = ReCoF kur
 home-checking = Güncellemeler aranıyor...
@@ -157,6 +160,19 @@ launch-cvars-title = ReCoF seçenekleri
 launch-cvars-none = ReCoF'un bu sürümü kendine ait seçenek getirmiyor.
 launch-cvars-from-release = Kurulu olan ReCoF sürümünden gelirler.
 launch-cvars-defaults = Varsayılanlara dön
+options-title = Seçenekler
+options-section-display = Ekran
+options-section-advanced = Gelişmiş
+options-group-other = Diğer
+options-group-gameplay = Oynanış
+options-group-movement = Hareket
+options-group-hud = Arayüz
+options-group-input = Kontroller
+options-group-performance = Performans
+options-group-spray = Sprey
+options-group-crosshair = Nişangâh
+options-group-viewmodel = Silah modeli
+options-group-startup = Başlangıç
 
 ## Güncellemeler
 
@@ -167,6 +183,9 @@ update-changelog = Neler değişti
 update-no-changelog = Bu sürümün notu yok.
 update-install = Şimdi güncelle
 update-later = Sonra
+update-skip-version = Bu sürümü atla
+update-launcher-ready = Araç { $version } hazır
+update-restart-now = Şimdi yeniden başlat
 update-downloading = { $name } indiriliyor
 update-verifying = İmza ve özetler denetleniyor
 update-extracting = Açılıyor
