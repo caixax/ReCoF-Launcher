@@ -12,7 +12,7 @@ use std::path::Path;
 pub use args::{build, preview, CvarArg, MAX_COMMAND_LINE};
 pub use cvars::{saved_values, Cvar, CvarFile, CvarKind};
 
-use crate::consts::{GAME_EXE, VANILLA_LAUNCH_URL};
+use crate::consts::{GAME_EXE, SMART_APP_CONTROL_URL, VANILLA_LAUNCH_URL};
 use crate::settings::LaunchSettings;
 use crate::{Error, Result};
 
@@ -29,6 +29,10 @@ pub enum LaunchProblem {
     AlreadyRunning,
     /// There is no cof.exe where there should be.
     MissingExe,
+    /// Windows Smart App Control is on: it refuses ReCoF's unsigned DLLs,
+    /// so the game would stop with a "Bad Image" box. A warning, since the
+    /// user may know better (and signed builds will not trip it).
+    SmartAppControl,
 }
 
 impl LaunchProblem {
@@ -37,12 +41,16 @@ impl LaunchProblem {
             LaunchProblem::SteamNotRunning => "launch-steam-not-running",
             LaunchProblem::AlreadyRunning => "launch-already-running",
             LaunchProblem::MissingExe => "err-no-game-exe",
+            LaunchProblem::SmartAppControl => "launch-sac",
         }
     }
 
     /// Whether the user may go ahead anyway.
     pub fn is_only_a_warning(&self) -> bool {
-        matches!(self, LaunchProblem::SteamNotRunning)
+        matches!(
+            self,
+            LaunchProblem::SteamNotRunning | LaunchProblem::SmartAppControl
+        )
     }
 }
 
@@ -59,6 +67,10 @@ pub fn check(install_root: &Path) -> Vec<LaunchProblem> {
     }
     if matches!(recof_platform::is_running_by_name(GAME_PROCESS), Ok(true)) {
         problems.push(LaunchProblem::AlreadyRunning);
+    }
+    if matches!(recof_platform::smart_app_control_enforcing(), Ok(true)) {
+        log::warn!("Smart App Control is on: Windows blocks unsigned DLLs such as ReCoF's");
+        problems.push(LaunchProblem::SmartAppControl);
     }
     problems
 }
@@ -98,6 +110,11 @@ pub fn play_recof(
 pub fn play_vanilla() -> Result<()> {
     log::info!("opening {VANILLA_LAUNCH_URL}");
     Ok(recof_platform::open_in_shell(VANILLA_LAUNCH_URL)?)
+}
+
+/// Opens Windows Security at the Smart App Control settings.
+pub fn open_smart_app_control() -> Result<()> {
+    Ok(recof_platform::open_in_shell(SMART_APP_CONTROL_URL)?)
 }
 
 /// Opens the Steam client.
@@ -156,6 +173,7 @@ mod tests {
     #[test]
     fn steam_not_running_is_a_warning_and_not_a_refusal() {
         assert!(LaunchProblem::SteamNotRunning.is_only_a_warning());
+        assert!(LaunchProblem::SmartAppControl.is_only_a_warning());
         assert!(!LaunchProblem::AlreadyRunning.is_only_a_warning());
     }
 
@@ -165,6 +183,7 @@ mod tests {
             LaunchProblem::SteamNotRunning,
             LaunchProblem::AlreadyRunning,
             LaunchProblem::MissingExe,
+            LaunchProblem::SmartAppControl,
         ] {
             assert!(
                 problem.message_id().starts_with("launch-")

@@ -127,6 +127,11 @@ pub enum ConfirmAction {
     OpenSteam,
     /// Start ReCoF even though Steam is not running.
     LaunchAnyway,
+    /// Open Windows Security at Smart App Control.
+    OpenSmartAppControl,
+    /// Go on with the launch although Smart App Control is on; the Steam
+    /// check still follows.
+    LaunchPastSmartAppControl,
     RestoreBackup {
         archive: std::path::PathBuf,
     },
@@ -778,6 +783,18 @@ impl App {
                     (self.settings.install_path.clone(), context.cloned())
                 {
                     crate::screens::home::start_game_now(self, &ctx, &root);
+                }
+            }
+            ConfirmAction::OpenSmartAppControl => {
+                if let Err(error) = recof_core::launch::open_smart_app_control() {
+                    log::warn!("Windows Security could not be opened: {error}");
+                }
+            }
+            ConfirmAction::LaunchPastSmartAppControl => {
+                if let (Some(root), Some(ctx)) =
+                    (self.settings.install_path.clone(), context.cloned())
+                {
+                    crate::screens::home::start_game_past_sac(self, &ctx, &root);
                 }
             }
             ConfirmAction::RestoreBackup { archive } => {

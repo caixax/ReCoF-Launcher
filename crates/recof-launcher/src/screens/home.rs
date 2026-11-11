@@ -451,6 +451,20 @@ fn channel_key(channel: recof_core::manifest::Channel) -> &'static str {
 }
 
 fn start_game(app: &mut App, ctx: &egui::Context, install_root: &std::path::Path) {
+    start_game_checked(app, ctx, install_root, false);
+}
+
+/// The launch once the user chose to go on with Smart App Control on.
+pub fn start_game_past_sac(app: &mut App, ctx: &egui::Context, install_root: &std::path::Path) {
+    start_game_checked(app, ctx, install_root, true);
+}
+
+fn start_game_checked(
+    app: &mut App,
+    ctx: &egui::Context,
+    install_root: &std::path::Path,
+    past_sac: bool,
+) {
     let problems = launch::check(install_root);
 
     // A hard problem stops the launch; Steam not running is reported and
@@ -460,6 +474,23 @@ fn start_game(app: &mut App, ctx: &egui::Context, install_root: &std::path::Path
         app.notice = Some(Notice::warn(
             app.t_args(id, &[("path", install_root.display().to_string())]),
         ));
+        return;
+    }
+
+    // Smart App Control refuses ReCoF's unsigned DLLs, and all the player
+    // would see is a "Bad Image" box from cof.exe. Say why first.
+    if !past_sac && problems.contains(&LaunchProblem::SmartAppControl) {
+        app.confirm = Some(
+            Confirm::new(
+                format!("{} {}", app.t("launch-sac"), app.t("launch-sac-help")),
+                app.t("launch-open-sac"),
+                ConfirmAction::OpenSmartAppControl,
+            )
+            .or(
+                app.t("launch-start-anyway"),
+                ConfirmAction::LaunchPastSmartAppControl,
+            ),
+        );
         return;
     }
 

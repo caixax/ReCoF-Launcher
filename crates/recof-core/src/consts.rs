@@ -44,6 +44,9 @@ pub const LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 /// Steam URL that starts retail Cry of Fear.
 pub const VANILLA_LAUNCH_URL: &str = "steam://rungameid/223710";
 
+/// Windows Security, at the Smart App Control settings.
+pub const SMART_APP_CONTROL_URL: &str = "windowsdefender://smartapp/";
+
 /// Base arguments retail `CoFLaunchApp.exe` passes to `cof.exe`.
 /// Source: `src/coflaunchapp/Form1.cs`, `button1_Click`.
 pub const BASE_LAUNCH_ARGS: &[&str] = &[
