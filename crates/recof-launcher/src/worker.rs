@@ -88,6 +88,8 @@ pub enum Job {
         app_data: PathBuf,
         channel: Channel,
         recof_installed: Option<Version>,
+        /// The user asked, so a fresh cache is checked with GitHub too.
+        asked: bool,
     },
     /// Back up, download, verify, store and apply a ReCoF release.
     Update {
@@ -514,7 +516,8 @@ fn run(job: Job, cancel: &Arc<AtomicBool>, emit: &dyn Fn(Event)) {
             app_data,
             channel,
             recof_installed,
-        } => emit(check_updates(&app_data, channel, recof_installed)),
+            asked,
+        } => emit(check_updates(&app_data, channel, recof_installed, asked)),
 
         Job::Update {
             available,
@@ -760,9 +763,15 @@ fn measure(source: &Path, destination: &Path, app_data: &Path, cancel: &Arc<Atom
     }
 }
 
-fn check_updates(app_data: &Path, channel: Channel, recof_installed: Option<Version>) -> Event {
+fn check_updates(
+    app_data: &Path,
+    channel: Channel,
+    recof_installed: Option<Version>,
+    asked: bool,
+) -> Event {
     let paths = AppPaths::at(app_data);
     let client = GithubClient::new(paths.cache_dir());
+    let client = if asked { client.revalidating() } else { client };
     let running = Version::parse(recof_core::consts::LAUNCHER_VERSION).ok();
 
     let mut found = UpdateCheck::default();

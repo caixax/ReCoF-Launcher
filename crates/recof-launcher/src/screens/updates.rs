@@ -19,18 +19,25 @@ pub fn check_once(app: &mut App) {
     if app.update_check_requested || !app.settings.check_updates_on_start {
         return;
     }
-    check_now(app);
+    send_check(app, false);
 }
 
 /// Asks for a check whatever the setting says, for when the user asked
 /// for one, such as by changing the channel on the install screen.
 pub fn check_now(app: &mut App) {
+    send_check(app, true);
+}
+
+/// Starts a check; `asked` makes it ask GitHub even when the cached answer
+/// is fresh.
+fn send_check(app: &mut App, asked: bool) {
     app.update_check_requested = true;
     app.update_checking = true;
     app.worker.send_background(Job::CheckUpdates {
         app_data: app.paths.root().to_path_buf(),
         channel: app.settings.channel,
         recof_installed: app.installed.as_ref().map(|state| state.version.clone()),
+        asked,
     });
 }
 

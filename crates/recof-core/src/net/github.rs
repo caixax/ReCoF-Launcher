@@ -20,7 +20,12 @@ use crate::net::NetError;
 use crate::version::Version;
 
 /// How long a cached answer is used without asking GitHub again.
-pub const CACHE_TTL: Duration = Duration::from_secs(6 * 60 * 60);
+///
+/// Short, so a release shows up soon after it is published: once it runs
+/// out, GitHub is asked with the cached ETag, and an unchanged list costs
+/// a "not modified" answer rather than the whole list. Six hours kept new
+/// releases out of sight for most of a day.
+pub const CACHE_TTL: Duration = Duration::from_secs(10 * 60);
 
 /// Largest reply the launcher will read. A release list is a few tens of
 /// kilobytes; anything far beyond that is not something to parse.
@@ -116,6 +121,9 @@ pub struct GithubClient {
     base: String,
     /// Set to false in tests that must not reach the network.
     offline: bool,
+    /// Ask GitHub even when the cache is still fresh, for a check the user
+    /// asked for.
+    revalidate: bool,
 }
 
 impl GithubClient {
@@ -131,7 +139,16 @@ impl GithubClient {
             cache_dir: cache_dir.into(),
             base: "https://api.github.com".to_owned(),
             offline: false,
+            revalidate: false,
         }
+    }
+
+    /// Asks GitHub even when the cached answer is still fresh (with its
+    /// ETag, so an unchanged list is a "not modified" answer): a check the
+    /// user asked for must see a release published a minute ago.
+    pub fn revalidating(mut self) -> Self {
+        self.revalidate = true;
+        self
     }
 
     /// Points the client at another host, for tests.
@@ -193,7 +210,9 @@ impl GithubClient {
         let cached = read_cache(&cache_path);
 
         if let Some(cached) = &cached {
-            if now_seconds().saturating_sub(cached.fetched_at) < CACHE_TTL.as_secs() {
+            if !self.revalidate
+                && now_seconds().saturating_sub(cached.fetched_at) < CACHE_TTL.as_secs()
+            {
                 log::debug!("{url}: using the cached reply");
                 return Ok(cached.body.clone());
             }
