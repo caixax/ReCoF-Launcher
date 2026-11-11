@@ -361,35 +361,6 @@ fn behaviour_tab(app: &mut App, ui: &mut egui::Ui) {
     });
 
     ui.add_space(10.0);
-    theme::card(ui, |ui| {
-        ui.set_width(ui.available_width());
-        let discord_label = app.t("settings-discord");
-        let discord_help = app.t("settings-discord-help");
-
-        // A build with no Discord application id compiled in can never
-        // show a presence. Leaving the box tickable would mean a setting
-        // that is on and does nothing, which is the hardest kind of
-        // thing to debug from the other side of a bug report.
-        let configured = recof_core::presence::Presence::is_configured();
-        ui.add_enabled_ui(configured, |ui| {
-            if ui
-                .checkbox(&mut app.settings.discord_rich_presence, discord_label)
-                .changed()
-            {
-                app.save_settings();
-            }
-        });
-        theme::help(ui, &discord_help);
-        if !configured {
-            ui.label(
-                egui::RichText::new(app.t("settings-discord-unavailable"))
-                    .size(12.0)
-                    .color(theme::WARN),
-            );
-        }
-    });
-
-    ui.add_space(10.0);
     if ui.button(app.t("settings-open-logs")).clicked() {
         let folder = app.paths.logs_dir().display().to_string();
         if let Err(error) = recof_platform::open_in_shell(&folder) {

@@ -1,9 +1,7 @@
 //! How long the game has been played, and when it was last played.
 //!
-//! The launcher already asks the system every few seconds whether the
-//! game is running, for the Discord presence. This counts the time
-//! between those answers, so it needs nothing the launcher was not
-//! already doing.
+//! The launcher asks the system every few seconds whether the game is
+//! running. This counts the time between those answers.
 //!
 //! Counted from the poll rather than from a session that is opened and
 //! closed, because a launcher that is killed, or a machine that loses

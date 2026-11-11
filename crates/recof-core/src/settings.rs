@@ -103,8 +103,6 @@ pub struct Settings {
     pub channel: Channel,
     /// Look for updates in the background when the launcher starts.
     pub check_updates_on_start: bool,
-    /// Off by default, as asked.
-    pub discord_rich_presence: bool,
     /// How many releases the version store keeps.
     pub keep_versions: usize,
     /// A launcher version the user chose to skip, so its window does not
@@ -125,7 +123,6 @@ impl Default for Settings {
             vanilla_path: None,
             channel: Channel::Stable,
             check_updates_on_start: true,
-            discord_rich_presence: false,
             keep_versions: crate::store::KEEP_VERSIONS,
             skipped_launcher_version: None,
             launch: LaunchSettings::default(),
@@ -224,7 +221,6 @@ mod tests {
     fn the_defaults_are_the_ones_the_project_asked_for() {
         let settings = Settings::default();
         assert_eq!(settings.channel, Channel::Stable);
-        assert!(!settings.discord_rich_presence);
         assert!(settings.check_updates_on_start);
         assert!(settings.language.is_none());
         assert!(settings.needs_first_run());

@@ -12,7 +12,6 @@ repository.workspace = true
 recof-platform.workspace = true
 
 base64.workspace = true
-discord-rich-presence.workspace = true
 ed25519-dalek.workspace = true
 
 hex.workspace = true

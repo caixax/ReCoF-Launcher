@@ -180,11 +180,9 @@ pub struct App {
     /// Whether to make a desktop shortcut once the install finishes.
     pub shortcut_on_install: bool,
 
-    /// Discord Rich Presence, which is off unless the setting is on.
-    pub presence: recof_core::presence::Presence,
     /// When the game was last checked for, so the poll is not run on
     /// every frame.
-    pub presence_checked: std::time::Instant,
+    pub game_checked: std::time::Instant,
     /// Whether the game was running the last time it was looked at.
     pub game_running: bool,
     /// Hours played, counted from the same poll.
@@ -295,8 +293,7 @@ impl App {
             artwork_requested: false,
             grain: crate::brand::Grain::new(&cc.egui_ctx),
             shortcut_on_install: false,
-            presence: recof_core::presence::Presence::new(),
-            presence_checked: std::time::Instant::now(),
+            game_checked: std::time::Instant::now(),
             game_running: false,
             playtime,
             playtime_saved: std::time::Instant::now(),
@@ -860,22 +857,21 @@ impl eframe::App for App {
 }
 
 impl App {
-    /// Keeps the hours played and the Discord presence in step with
-    /// whether the game is open.
+    /// Keeps the hours played in step with whether the game is open.
     ///
     /// Polled every few seconds rather than every frame: it asks the
     /// system for the process list, which is not something to do sixty
-    /// times a second. Both answers come from the one poll, so turning
-    /// the presence off does not stop the clock.
+    /// times a second. The Discord presence is the game's own (ReCoF's
+    /// client.dll), so the launcher shows none.
     fn watch_game(&mut self) {
         const EVERY: std::time::Duration = std::time::Duration::from_secs(3);
         const WRITE_EVERY: std::time::Duration = std::time::Duration::from_secs(60);
 
-        let since_last = self.presence_checked.elapsed();
+        let since_last = self.game_checked.elapsed();
         if since_last < EVERY {
             return;
         }
-        self.presence_checked = std::time::Instant::now();
+        self.game_checked = std::time::Instant::now();
 
         let running = matches!(
             recof_platform::is_running_by_name(recof_core::launch::GAME_PROCESS),
@@ -884,7 +880,6 @@ impl App {
 
         self.count_playtime(running, since_last, WRITE_EVERY);
         self.game_running = running;
-        self.show_presence(running);
     }
 
     /// Adds this poll to the hours played, and writes them when there is
@@ -917,32 +912,6 @@ impl App {
         self.playtime_saved = std::time::Instant::now();
         if let Err(error) = self.playtime.save(self.paths.root()) {
             log::warn!("the hours played could not be written: {error}");
-        }
-    }
-
-    /// Shows or takes down the Discord presence.
-    fn show_presence(&mut self, running: bool) {
-        if !self.settings.discord_rich_presence {
-            if self.presence.is_showing() {
-                self.presence.disconnect();
-            }
-            return;
-        }
-
-        match (running, self.installed.as_ref()) {
-            (true, Some(state)) => {
-                let version = state.version.to_string();
-                if let Err(error) = self.presence.show_playing(&version) {
-                    // Logged rather than shown: a Discord that is not
-                    // running is not a problem with the launcher.
-                    log::debug!("the Discord presence is not showing: {error:?}");
-                }
-            }
-            _ => {
-                if self.presence.is_showing() {
-                    self.presence.clear();
-                }
-            }
         }
     }
 
