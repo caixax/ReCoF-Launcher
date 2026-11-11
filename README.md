@@ -6,6 +6,11 @@ It finds your Steam copy of Cry of Fear, copies it to a folder you choose, appli
 
 **Your Steam installation is never modified.** The launcher reads and hashes it, and nothing more. ReCoF always lives in a separate copy.
 
+> [!WARNING]
+> **Windows 11 and Smart App Control.** ReCoF's files are not digitally signed yet. On a PC where Smart App Control is on, Windows refuses to load them and the game stops with a "Bad Image" error that names `hw.dll` (error status `0xc0e90002`). The launcher checks for this when you press Play and offers to open the setting. To play ReCoF, turn it off: open **Windows Security**, go to **App & browser control**, click **Smart App Control settings** and choose **Off**. A shortcut: press Win+R, type `windowsdefender://smartapp/` and press Enter. On many versions of Windows 11 it cannot be turned back on afterwards without resetting Windows; Microsoft Defender keeps protecting the PC either way.
+>
+> Windows 10 is not affected, nor is Windows 11 when Smart App Control is off or still in evaluation mode.
+
 This is a standalone MIT licensed project. It is not a replacement for `CoFLaunchApp.exe` and has no relationship with it.
 
 ## What it does
