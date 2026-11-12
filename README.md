@@ -25,6 +25,7 @@ This is a standalone MIT licensed project. It is not a replacement for `CoFLaunc
 - Imports your progress from the vanilla install, one way only.
 - Verifies and repairs, moves the installation, and uninstalls cleanly.
 - Starts ReCoF directly, or vanilla Cry of Fear through Steam.
+- Joins a server: Join a server, in the menu beside Play, starts ReCoF connected to the address you type (for servers such as [ReCoF Server](https://github.com/caixax/ReCoF-Server)).
 
 ## Rules it follows
 
