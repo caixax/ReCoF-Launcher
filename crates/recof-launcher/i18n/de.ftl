@@ -124,6 +124,12 @@ install-release-try-beta = Im stabilen Kanal ist noch nichts veröffentlicht. Te
 
 home-play = ReCoF spielen
 home-play-vanilla = Original spielen
+home-join = Einem Server beitreten
+join-title = Einem Server beitreten
+join-help = Startet ReCoF und verbindet mit dem Server. Die Adresse bekommst du vom Betreiber; ein Server für ReCoF-Spieler braucht ReCoF 0.2.3 oder neuer.
+join-address = Serveradresse (IP oder Name, dazu der Port, wenn er nicht 27015 ist)
+join-invalid = Das ist keine Serveradresse.
+join-button = Beitreten
 home-update-to = Auf { $version } aktualisieren
 home-play-without-update = Ohne Update spielen
 home-launcher-update-short = Launcher { $version } verfügbar

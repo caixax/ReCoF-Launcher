@@ -124,6 +124,12 @@ install-release-try-beta = Kararlı kanalda henüz bir şey yayımlanmadı. Test
 
 home-play = ReCoF oyna
 home-play-vanilla = Özgün sürümü oyna
+home-join = Bir sunucuya katıl
+join-title = Bir sunucuya katıl
+join-help = ReCoF'u başlatır ve sunucuya bağlanır. Adresi sunucunun sahibinden isteyin; ReCoF oyuncuları için bir sunucu ReCoF 0.2.3 veya daha yenisini gerektirir.
+join-address = Sunucu adresi (IP veya ad, port 27015 değilse port da)
+join-invalid = Bu bir sunucu adresi değil.
+join-button = Katıl
 home-update-to = { $version } sürümüne güncelle
 home-play-without-update = Güncellemeden oyna
 home-launcher-update-short = Araç { $version } hazır

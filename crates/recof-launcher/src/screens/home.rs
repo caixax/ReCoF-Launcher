@@ -296,6 +296,7 @@ fn more_menu(app: &mut App, ui: &mut egui::Ui, offering_update: bool) {
     let button = square_button(ui, Icon::Menu).on_hover_text(tip);
 
     let without_update = app.t("home-play-without-update");
+    let join = app.t("home-join");
     let vanilla = app.t("home-play-vanilla");
     let options = app.t("launch-options-title");
     let check = app.t("updates-check-now");
@@ -319,6 +320,7 @@ fn more_menu(app: &mut App, ui: &mut egui::Ui, offering_update: bool) {
     let mut open_launcher_update = false;
     let mut open_restart = false;
     let mut play_installed = false;
+    let mut open_join = false;
     let mut play_vanilla = false;
     let mut open_options = false;
     let mut check_updates = false;
@@ -330,6 +332,9 @@ fn more_menu(app: &mut App, ui: &mut egui::Ui, offering_update: bool) {
                 play_installed = ui.button(without_update).clicked();
             });
         }
+        ui.add_enabled_ui(can_play, |ui| {
+            open_join = ui.button(join).clicked();
+        });
         play_vanilla = ui.button(vanilla).clicked();
         open_options = ui.button(options).clicked();
         ui.add_enabled_ui(!busy, |ui| {
@@ -355,6 +360,9 @@ fn more_menu(app: &mut App, ui: &mut egui::Ui, offering_update: bool) {
             let ctx = ui.ctx().clone();
             start_game(app, &ctx, &root);
         }
+    }
+    if open_join {
+        app.join_window = Some(app.settings.launch.last_server.clone());
     }
     if open_options {
         app.screen = Screen::LaunchOptions;
@@ -451,7 +459,68 @@ fn channel_key(channel: recof_core::manifest::Channel) -> &'static str {
 }
 
 fn start_game(app: &mut App, ctx: &egui::Context, install_root: &std::path::Path) {
+    // A join the user backed out of (cancelling a warning) is not carried
+    // into a normal launch.
+    app.join_address = None;
     start_game_checked(app, ctx, install_root, false);
+}
+
+/// The window that joins a server: an address box, and the same launch
+/// as the play button with `+connect <address>` added for this launch.
+pub fn join_window(app: &mut App, ctx: &egui::Context) {
+    let Some(mut typed) = app.join_window.clone() else {
+        return;
+    };
+
+    let address = launch::server_address(&typed);
+    let mut open = true;
+    let mut join = false;
+    egui::Window::new(app.t("join-title"))
+        .collapsible(false)
+        .resizable(false)
+        .anchor(egui::Align2::CENTER_CENTER, egui::vec2(0.0, 0.0))
+        .show(ctx, |ui| {
+            ui.set_max_width(460.0);
+            theme::body(ui, &app.t("join-help"));
+            ui.add_space(8.0);
+            ui.label(app.t("join-address"));
+            let edit = ui.add(
+                egui::TextEdit::singleline(&mut typed)
+                    .hint_text("203.0.113.5:27015")
+                    .desired_width(320.0),
+            );
+            let entered =
+                edit.lost_focus() && ui.input(|input| input.key_pressed(egui::Key::Enter));
+            if !typed.trim().is_empty() && address.is_none() {
+                ui.label(egui::RichText::new(app.t("join-invalid")).color(theme::WARN));
+            }
+            ui.add_space(12.0);
+            ui.horizontal(|ui| {
+                let can_join = address.is_some() && !app.worker.is_busy();
+                if ui
+                    .add_enabled(can_join, egui::Button::new(app.t("join-button")))
+                    .clicked()
+                    || (can_join && entered)
+                {
+                    join = true;
+                }
+                if ui.button(app.t("button-cancel")).clicked() {
+                    open = false;
+                }
+            });
+        });
+
+    if join {
+        if let (Some(address), Some(root)) = (address, app.settings.install_path.clone()) {
+            app.settings.launch.last_server = address.clone();
+            app.save_settings();
+            app.join_address = Some(address);
+            app.join_window = None;
+            start_game_checked(app, ctx, &root, false);
+            return;
+        }
+    }
+    app.join_window = open.then_some(typed);
 }
 
 /// The launch once the user chose to go on with Smart App Control on.
@@ -521,7 +590,16 @@ fn start_game_checked(
 /// the "start anyway" answer when Steam is not running.
 pub fn start_game_now(app: &mut App, ctx: &egui::Context, install_root: &std::path::Path) {
     let cvars = cvar_args(app);
-    match launch::play_recof(install_root, &app.settings.launch, &cvars) {
+    // The join window's server, for this launch only: the saved options
+    // stay as they are.
+    let mut settings = app.settings.launch.clone();
+    if let Some(address) = app.join_address.take() {
+        log::info!("joining {address}");
+        settings.extra_args = format!("{} +connect {address}", settings.extra_args)
+            .trim()
+            .to_owned();
+    }
+    match launch::play_recof(install_root, &settings, &cvars) {
         Ok(pid) => {
             log::info!("ReCoF started as process {pid}");
             app.notice = Some(Notice::good(app.t("launch-starting")));

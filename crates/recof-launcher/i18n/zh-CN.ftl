@@ -123,6 +123,12 @@ install-release-try-beta = 稳定通道上还没有发布任何内容。测试�
 
 home-play = 开始 ReCoF
 home-play-vanilla = 开始原版
+home-join = 加入服务器
+join-title = 加入服务器
+join-help = 启动 ReCoF 并加入服务器。地址请向服务器的主人索取；面向 ReCoF 玩家的服务器需要 ReCoF 0.2.3 或更新版本。
+join-address = 服务器地址（IP 或域名，端口不是 27015 时请加上端口）
+join-invalid = 这不是服务器地址。
+join-button = 加入
 home-update-to = 更新到 { $version }
 home-play-without-update = 不更新直接开始
 home-launcher-update-short = 启动程序 { $version } 可用

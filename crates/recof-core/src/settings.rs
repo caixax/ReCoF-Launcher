@@ -36,6 +36,9 @@ pub struct LaunchSettings {
     /// they mean come from the data file shipped with the release, never
     /// from a list inside the launcher.
     pub cvars: BTreeMap<String, String>,
+    /// The last server joined from the launcher, offered again next time.
+    /// Never part of a normal launch.
+    pub last_server: String,
 }
 
 /// How the launcher looks.

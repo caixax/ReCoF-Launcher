@@ -213,6 +213,11 @@ pub struct App {
     pub restart_popup: bool,
     /// Whether the window with what changed in the ReCoF update is open.
     pub recof_notes_popup: bool,
+    /// The join window's address as the user types it, while it is open.
+    pub join_window: Option<String>,
+    /// The server the next launch joins, set by the join window and
+    /// cleared by the play button.
+    pub join_address: Option<String>,
     /// The section of the options on the main screen.
     pub options_section: String,
 
@@ -310,6 +315,8 @@ impl App {
             launcher_popup: false,
             restart_popup: false,
             recof_notes_popup: false,
+            join_window: None,
+            join_address: None,
             options_section: String::new(),
             backups: Vec::new(),
             backups_listed: false,
@@ -868,6 +875,7 @@ impl eframe::App for App {
             });
 
         screens::updates::popups(self, &ctx);
+        screens::home::join_window(self, &ctx);
         self.draw_confirm(&ctx);
         self.watch_game();
     }

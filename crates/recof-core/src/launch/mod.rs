@@ -6,11 +6,13 @@
 
 pub mod args;
 pub mod cvars;
+pub mod server;
 
 use std::path::Path;
 
 pub use args::{build, preview, CvarArg, MAX_COMMAND_LINE};
 pub use cvars::{saved_values, Cvar, CvarFile, CvarKind};
+pub use server::server_address;
 
 use crate::consts::{GAME_EXE, SMART_APP_CONTROL_URL, VANILLA_LAUNCH_URL};
 use crate::settings::LaunchSettings;
