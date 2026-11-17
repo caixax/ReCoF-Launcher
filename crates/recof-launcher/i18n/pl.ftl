@@ -340,6 +340,8 @@ err-github = GitHub odpowiedział błędem: { $detail }
 err-rate-limited = GitHub ogranicza liczbę zapytań z tego połączenia. Spróbuj za kilka minut.
 err-no-release = Na tym kanale nie opublikowano jeszcze żadnego wydania.
 err-command-line-too-long = Wiersz poleceń miałby { $length } znaków, a gra przyjmuje najwyżej { $limit }. Skróć dodatkowe argumenty.
+err-declined = Nie przyznano uprawnień administratora, więc nic nie zostało zmienione.
+err-path-too-broad = Ścieżka { $path } jest zbyt ogólna, aby ją wykluczyć.
 
 ## Ustawienia, w zakładkach
 
@@ -370,6 +372,22 @@ look-no-art = Nie znaleziono grafik, więc program rysuje własne.
 behaviour-minimize = Zminimalizuj program po uruchomieniu gry
 behaviour-close = Zamknij program po uruchomieniu gry
 behaviour-close-help = Ma pierwszeństwo przed minimalizowaniem.
+
+## Zabezpieczenia Windows
+
+defender-title = Zabezpieczenia Windows
+defender-why = ReCoF i ten program nie są jeszcze podpisane, więc programy antywirusowe mogą omyłkowo zablokować lub usunąć ich pliki.
+defender-offer = Program może dodać te pozycje do wykluczeń Zabezpieczeń Windows, aby Microsoft Defender zostawił je w spokoju:
+defender-admin = Windows poprosi o uprawnienia administratora.
+defender-add = Dodaj wykluczenia
+defender-not-now = Nie teraz
+defender-never = Nie pytaj ponownie
+defender-waiting = Czekam na Windows...
+defender-done = Zabezpieczenia Windows nie będą już ruszać tego programu ani ReCoF.
+defender-failed = Nie udało się dodać wykluczeń. Szczegóły są w dzienniku.
+defender-checking = Szukam folderów...
+defender-settings-help = Ponownie dodaje foldery tego programu i ReCoF do wykluczeń Zabezpieczeń Windows, na przykład gdy Microsoft Defender zablokował lub usunął plik.
+defender-settings-ask = Proponuj to przy uruchomieniu programu
 
 ## O programie
 

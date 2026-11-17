@@ -13,4 +13,7 @@ log.workspace = true
 thiserror.workspace = true
 
 [target.'cfg(windows)'.dependencies]
+# For PowerShell's -EncodedCommand, so a path is never re-quoted on its
+# way to the elevated process. Already in the tree through recof-core.
+base64.workspace = true
 windows.workspace = true

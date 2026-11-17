@@ -340,6 +340,8 @@ err-github = GitHub hat mit einem Fehler geantwortet: { $detail }
 err-rate-limited = GitHub drosselt diese Verbindung. Versuche es in ein paar Minuten erneut.
 err-no-release = In diesem Kanal wurde noch nichts veröffentlicht.
 err-command-line-too-long = Die Befehlszeile wäre { $length } Zeichen lang, das Spiel nimmt höchstens { $limit }. Kürze die zusätzlichen Argumente.
+err-declined = Es wurden keine Administratorrechte erteilt, daher wurde nichts geändert.
+err-path-too-broad = { $path } ist zu allgemein, um ausgeschlossen zu werden.
 
 ## Einstellungen, in Reitern
 
@@ -370,6 +372,22 @@ look-no-art = Keine Bilder gefunden, also zeichnet der Launcher seine eigenen.
 behaviour-minimize = Den Launcher minimieren, wenn das Spiel startet
 behaviour-close = Den Launcher schließen, wenn das Spiel startet
 behaviour-close-help = Hat Vorrang vor dem Minimieren.
+
+## Windows-Sicherheit
+
+defender-title = Windows-Sicherheit
+defender-why = ReCoF und dieser Launcher sind noch nicht signiert, daher können Antivirenprogramme ihre Dateien fälschlich blockieren oder löschen.
+defender-offer = Der Launcher kann diese Einträge zu den Ausschlüssen der Windows-Sicherheit hinzufügen, damit Microsoft Defender sie in Ruhe lässt:
+defender-admin = Windows fragt nach Administratorrechten.
+defender-add = Ausschlüsse hinzufügen
+defender-not-now = Nicht jetzt
+defender-never = Nicht mehr fragen
+defender-waiting = Warte auf Windows...
+defender-done = Die Windows-Sicherheit lässt den Launcher und ReCoF jetzt in Ruhe.
+defender-failed = Die Ausschlüsse konnten nicht hinzugefügt werden. Details stehen im Protokoll.
+defender-checking = Ordner werden gesucht...
+defender-settings-help = Fügt die Ordner des Launchers und von ReCoF erneut zu den Ausschlüssen der Windows-Sicherheit hinzu, etwa wenn Microsoft Defender eine Datei blockiert oder gelöscht hat.
+defender-settings-ask = Beim Start des Launchers anbieten
 
 ## Über
 

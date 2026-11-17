@@ -338,6 +338,8 @@ err-github = GitHub ha respondido con un error: { $detail }
 err-rate-limited = GitHub está limitando las peticiones de esta conexión. Inténtalo dentro de unos minutos.
 err-no-release = Todavía no se ha publicado ninguna versión en este canal.
 err-command-line-too-long = La línea de comandos tendría { $length } caracteres y el juego admite como mucho { $limit }. Acorta los argumentos adicionales.
+err-declined = No se dio permiso de administrador, así que no se cambió nada.
+err-path-too-broad = { $path } es demasiado amplio para excluirlo.
 
 ## Ajustes, por pestañas
 
@@ -368,6 +370,22 @@ look-no-art = No se ha encontrado arte, así que el lanzador dibuja el suyo.
 behaviour-minimize = Minimizar el lanzador al arrancar el juego
 behaviour-close = Cerrar el lanzador al arrancar el juego
 behaviour-close-help = Tiene prioridad sobre minimizar.
+
+## Seguridad de Windows
+
+defender-title = Seguridad de Windows
+defender-why = ReCoF y este lanzador aún no están firmados, así que los antivirus pueden bloquear o borrar sus archivos por error.
+defender-offer = El lanzador puede añadir esto a las exclusiones de Seguridad de Windows, para que Microsoft Defender no lo toque:
+defender-admin = Windows pedirá permiso de administrador.
+defender-add = Añadir exclusiones
+defender-not-now = Ahora no
+defender-never = No volver a preguntar
+defender-waiting = Esperando a Windows...
+defender-done = Seguridad de Windows ya no tocará el lanzador ni ReCoF.
+defender-failed = No se pudieron añadir las exclusiones. Los detalles están en los logs.
+defender-checking = Buscando las carpetas...
+defender-settings-help = Vuelve a añadir las carpetas del lanzador y de ReCoF a las exclusiones de Seguridad de Windows, por ejemplo si Microsoft Defender bloqueó o borró un archivo.
+defender-settings-ask = Ofrecerlo al abrir el lanzador
 
 ## Acerca de
 

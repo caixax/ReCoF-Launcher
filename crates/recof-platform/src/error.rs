@@ -17,6 +17,14 @@ pub enum PlatformError {
 
     #[error("io: {0}")]
     Io(#[from] std::io::Error),
+
+    /// The user said no to the administrator prompt.
+    #[error("the administrator prompt was cancelled")]
+    Declined,
+
+    /// A path too broad to hand to the operation, such as a drive root.
+    #[error("{0} is too broad to be excluded")]
+    NotAllowed(String),
 }
 
 impl PlatformError {
@@ -26,6 +34,8 @@ impl PlatformError {
             PlatformError::Registry { .. } => "err-registry",
             PlatformError::Api { .. } => "err-platform-api",
             PlatformError::Io(_) => "err-io",
+            PlatformError::Declined => "err-declined",
+            PlatformError::NotAllowed(_) => "err-path-too-broad",
         }
     }
 
@@ -33,6 +43,7 @@ impl PlatformError {
         match self {
             PlatformError::Registry { key, .. } => vec![("key", key.clone())],
             PlatformError::Api { api, .. } => vec![("api", (*api).to_string())],
+            PlatformError::NotAllowed(path) => vec![("path", path.clone())],
             _ => Vec::new(),
         }
     }

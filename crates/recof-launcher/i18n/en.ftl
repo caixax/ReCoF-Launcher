@@ -338,6 +338,8 @@ err-github = GitHub answered with an error: { $detail }
 err-rate-limited = GitHub is rate limiting this connection. Try again in a few minutes.
 err-no-release = No release has been published on this channel yet.
 err-command-line-too-long = The command line would be { $length } characters long, and the game takes at most { $limit }. Shorten the extra arguments.
+err-declined = Administrator permission was not given, so nothing was changed.
+err-path-too-broad = { $path } is too broad to exclude.
 
 ## Settings, in tabs
 
@@ -368,6 +370,22 @@ look-no-art = No artwork found, so the launcher is drawing its own.
 behaviour-minimize = Minimise the launcher when the game starts
 behaviour-close = Close the launcher when the game starts
 behaviour-close-help = Takes precedence over minimising.
+
+## Windows Security
+
+defender-title = Windows Security
+defender-why = ReCoF and this launcher are not signed yet, so antivirus programs can wrongly block or delete their files.
+defender-offer = The launcher can add these to the Windows Security exclusions, so Microsoft Defender leaves them alone:
+defender-admin = Windows will ask for administrator permission.
+defender-add = Add exclusions
+defender-not-now = Not now
+defender-never = Don't ask again
+defender-waiting = Waiting for Windows...
+defender-done = Windows Security now leaves the launcher and ReCoF alone.
+defender-failed = The exclusions could not be added. The log has the details.
+defender-checking = Finding the folders...
+defender-settings-help = Adds the launcher and ReCoF folders to the Windows Security exclusions again, for example after Microsoft Defender blocked or deleted a file.
+defender-settings-ask = Offer this when the launcher starts
 
 ## About
 

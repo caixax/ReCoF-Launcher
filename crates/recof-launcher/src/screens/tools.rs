@@ -361,6 +361,9 @@ fn behaviour_tab(app: &mut App, ui: &mut egui::Ui) {
     });
 
     ui.add_space(10.0);
+    crate::screens::security::settings_card(app, ui);
+
+    ui.add_space(10.0);
     if ui.button(app.t("settings-open-logs")).clicked() {
         let folder = app.paths.logs_dir().display().to_string();
         if let Err(error) = recof_platform::open_in_shell(&folder) {

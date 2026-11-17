@@ -87,6 +87,19 @@ pub struct BehaviourSettings {
     pub close_on_launch: bool,
 }
 
+/// What the launcher remembers about the Windows Security exclusions.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct DefenderSettings {
+    /// Folders already added to the exclusions, as
+    /// [`crate::paths::comparable`] writes them, so the offer is not made
+    /// again for them.
+    pub excluded: Vec<String>,
+    /// The player chose "Don't ask again". The settings can still add the
+    /// exclusions, and can turn the offer back on.
+    pub never_ask: bool,
+}
+
 /// Everything the launcher remembers between runs.
 // Not Eq: the dim is a float.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -114,6 +127,7 @@ pub struct Settings {
     pub launch: LaunchSettings,
     pub look: LookSettings,
     pub behaviour: BehaviourSettings,
+    pub defender: DefenderSettings,
 }
 
 impl Default for Settings {
@@ -131,6 +145,7 @@ impl Default for Settings {
             launch: LaunchSettings::default(),
             look: LookSettings::default(),
             behaviour: BehaviourSettings::default(),
+            defender: DefenderSettings::default(),
         }
     }
 }
@@ -375,6 +390,26 @@ mod tests {
         let old = Settings::load(&path);
         assert_eq!(old.look, LookSettings::default());
         assert_eq!(old.behaviour, BehaviourSettings::default());
+        assert_eq!(old.defender, DefenderSettings::default());
+
+        std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn the_exclusions_remembered_survive_a_round_trip() {
+        let base = scratch("defender-round-trip");
+        let path = base.join("settings.toml");
+
+        let mut settings = Settings::default();
+        assert!(!settings.defender.never_ask);
+        assert!(settings.defender.excluded.is_empty());
+        settings.defender.excluded = vec![
+            r"c:\users\x\appdata\local\recof launcher".to_owned(),
+            r"d:\juegos\librería\recof".to_owned(),
+        ];
+        settings.defender.never_ask = true;
+        settings.save(&path).unwrap();
+        assert_eq!(Settings::load(&path), settings);
 
         std::fs::remove_dir_all(&base).unwrap();
     }

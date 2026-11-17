@@ -1867,6 +1867,7 @@ dependencies = [
 name = "recof-platform"
 version = "1.0.4"
 dependencies = [
+ "base64",
  "log",
  "thiserror 2.0.21",
  "windows",

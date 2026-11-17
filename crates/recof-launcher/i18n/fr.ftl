@@ -340,6 +340,8 @@ err-github = GitHub a répondu par une erreur : { $detail }
 err-rate-limited = GitHub limite les requêtes de cette connexion. Réessayez dans quelques minutes.
 err-no-release = Aucune version n'a encore été publiée sur ce canal.
 err-command-line-too-long = La ligne de commande ferait { $length } caractères, et le jeu en accepte au plus { $limit }. Raccourcissez les arguments supplémentaires.
+err-declined = L'autorisation d'administrateur n'a pas été donnée, donc rien n'a été modifié.
+err-path-too-broad = { $path } est trop large pour être exclu.
 
 ## Réglages, par onglets
 
@@ -370,6 +372,22 @@ look-no-art = Aucune image trouvée, le lanceur dessine donc les siennes.
 behaviour-minimize = Réduire le lanceur au démarrage du jeu
 behaviour-close = Fermer le lanceur au démarrage du jeu
 behaviour-close-help = Prioritaire sur la réduction.
+
+## Sécurité Windows
+
+defender-title = Sécurité Windows
+defender-why = ReCoF et ce lanceur ne sont pas encore signés, donc les antivirus peuvent bloquer ou supprimer leurs fichiers par erreur.
+defender-offer = Le lanceur peut ajouter ces éléments aux exclusions de Sécurité Windows, pour que Microsoft Defender les laisse tranquilles :
+defender-admin = Windows demandera l'autorisation d'un administrateur.
+defender-add = Ajouter les exclusions
+defender-not-now = Pas maintenant
+defender-never = Ne plus demander
+defender-waiting = En attente de Windows...
+defender-done = Sécurité Windows laisse maintenant le lanceur et ReCoF tranquilles.
+defender-failed = Les exclusions n'ont pas pu être ajoutées. Les détails sont dans les journaux.
+defender-checking = Recherche des dossiers...
+defender-settings-help = Ajoute de nouveau les dossiers du lanceur et de ReCoF aux exclusions de Sécurité Windows, par exemple si Microsoft Defender a bloqué ou supprimé un fichier.
+defender-settings-ask = Le proposer au démarrage du lanceur
 
 ## À propos
 

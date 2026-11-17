@@ -340,6 +340,8 @@ err-github = GitHub bir hatayla yanıt verdi: { $detail }
 err-rate-limited = GitHub bu bağlantının isteklerini kısıtlıyor. Birkaç dakika sonra yeniden deneyin.
 err-no-release = Bu kanalda henüz hiçbir sürüm yayımlanmadı.
 err-command-line-too-long = Komut satırı { $length } karakter olurdu, oyun en fazla { $limit } karakter kabul ediyor. Ek bağımsız değişkenleri kısaltın.
+err-declined = Yönetici izni verilmedi, bu yüzden hiçbir şey değişmedi.
+err-path-too-broad = { $path } dışlanamayacak kadar geniş.
 
 ## Ayarlar, sekmeler hâlinde
 
@@ -370,6 +372,22 @@ look-no-art = Görsel bulunamadı, bu yüzden araç kendi çizdiklerini kullanı
 behaviour-minimize = Oyun başlayınca aracı simge durumuna küçült
 behaviour-close = Oyun başlayınca aracı kapat
 behaviour-close-help = Simge durumuna küçültmeye göre önceliklidir.
+
+## Windows Güvenliği
+
+defender-title = Windows Güvenliği
+defender-why = ReCoF ve bu araç henüz imzalı değil, bu yüzden virüsten koruma programları dosyalarını yanlışlıkla engelleyebilir veya silebilir.
+defender-offer = Araç bunları Windows Güvenliği dışlamalarına ekleyebilir, böylece Microsoft Defender onlara dokunmaz:
+defender-admin = Windows yönetici izni isteyecek.
+defender-add = Dışlamaları ekle
+defender-not-now = Şimdi değil
+defender-never = Bir daha sorma
+defender-waiting = Windows bekleniyor...
+defender-done = Windows Güvenliği artık bu araca ve ReCoF'a dokunmayacak.
+defender-failed = Dışlamalar eklenemedi. Ayrıntılar günlükte.
+defender-checking = Klasörler aranıyor...
+defender-settings-help = Aracın ve ReCoF'un klasörlerini Windows Güvenliği dışlamalarına yeniden ekler, örneğin Microsoft Defender bir dosyayı engellediyse veya sildiyse.
+defender-settings-ask = Araç açılırken bunu öner
 
 ## Hakkında
 

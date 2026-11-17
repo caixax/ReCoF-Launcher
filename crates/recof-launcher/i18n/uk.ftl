@@ -339,6 +339,8 @@ err-github = GitHub відповів помилкою: { $detail }
 err-rate-limited = GitHub обмежує запити з цього з'єднання. Спробуйте за кілька хвилин.
 err-no-release = У цьому каналі ще нічого не випущено.
 err-command-line-too-long = Командний рядок мав би { $length } символів, а гра приймає щонайбільше { $limit }. Скоротіть додаткові аргументи.
+err-declined = Права адміністратора не надано, тому нічого не змінено.
+err-path-too-broad = Шлях { $path } занадто загальний, щоб його виключати.
 
 ## Налаштування, за вкладками
 
@@ -369,6 +371,22 @@ look-no-art = Зображень не знайдено, тож програма 
 behaviour-minimize = Згортати програму, коли запускається гра
 behaviour-close = Закривати програму, коли запускається гра
 behaviour-close-help = Має перевагу над згортанням.
+
+## Безпека Windows
+
+defender-title = Безпека Windows
+defender-why = ReCoF і ця програма ще не підписані, тому антивіруси можуть помилково заблокувати або видалити їхні файли.
+defender-offer = Програма може додати це до винятків Безпеки Windows, щоб Microsoft Defender їх не чіпав:
+defender-admin = Windows попросить права адміністратора.
+defender-add = Додати винятки
+defender-not-now = Не зараз
+defender-never = Більше не питати
+defender-waiting = Очікування Windows...
+defender-done = Безпека Windows більше не чіпатиме цю програму і ReCoF.
+defender-failed = Не вдалося додати винятки. Подробиці в журналі.
+defender-checking = Пошук папок...
+defender-settings-help = Знову додає папки цієї програми і ReCoF до винятків Безпеки Windows, наприклад якщо Microsoft Defender заблокував або видалив файл.
+defender-settings-ask = Пропонувати це під час запуску програми
 
 ## Про програму
 

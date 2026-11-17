@@ -340,6 +340,8 @@ err-github = O GitHub respondeu com um erro: { $detail }
 err-rate-limited = O GitHub está limitando as requisições desta conexão. Tente de novo em alguns minutos.
 err-no-release = Ainda não foi publicada nenhuma versão neste canal.
 err-command-line-too-long = A linha de comando teria { $length } caracteres, e o jogo aceita no máximo { $limit }. Encurte os argumentos extras.
+err-declined = A permissão de administrador não foi dada, então nada foi alterado.
+err-path-too-broad = { $path } é amplo demais para ser excluído.
 
 ## Configurações, em abas
 
@@ -370,6 +372,22 @@ look-no-art = Nenhuma imagem encontrada, então o inicializador desenha as próp
 behaviour-minimize = Minimizar o inicializador quando o jogo começar
 behaviour-close = Fechar o inicializador quando o jogo começar
 behaviour-close-help = Tem prioridade sobre minimizar.
+
+## Segurança do Windows
+
+defender-title = Segurança do Windows
+defender-why = O ReCoF e este inicializador ainda não são assinados, então antivírus podem bloquear ou apagar os arquivos deles por engano.
+defender-offer = O inicializador pode adicionar estes itens às exclusões da Segurança do Windows, para que o Microsoft Defender não mexa neles:
+defender-admin = O Windows vai pedir permissão de administrador.
+defender-add = Adicionar exclusões
+defender-not-now = Agora não
+defender-never = Não perguntar de novo
+defender-waiting = Aguardando o Windows...
+defender-done = A Segurança do Windows não vai mais mexer no inicializador nem no ReCoF.
+defender-failed = Não foi possível adicionar as exclusões. Os registros têm os detalhes.
+defender-checking = Procurando as pastas...
+defender-settings-help = Adiciona de novo as pastas do inicializador e do ReCoF às exclusões da Segurança do Windows, por exemplo se o Microsoft Defender bloqueou ou apagou um arquivo.
+defender-settings-ask = Oferecer isto quando o inicializador abrir
 
 ## Sobre
 

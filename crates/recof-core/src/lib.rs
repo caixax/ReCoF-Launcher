@@ -8,6 +8,7 @@ pub mod artwork;
 pub mod backup;
 pub mod changelog;
 pub mod consts;
+pub mod defender;
 pub mod error;
 pub mod fsutil;
 pub mod hashes;

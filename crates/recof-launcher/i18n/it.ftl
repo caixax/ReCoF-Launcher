@@ -340,6 +340,8 @@ err-github = GitHub ha risposto con un errore: { $detail }
 err-rate-limited = GitHub sta limitando le richieste di questa connessione. Riprova tra qualche minuto.
 err-no-release = Su questo canale non è ancora stata pubblicata nessuna versione.
 err-command-line-too-long = La riga di comando sarebbe lunga { $length } caratteri e il gioco ne accetta al massimo { $limit }. Accorcia gli argomenti aggiuntivi.
+err-declined = L'autorizzazione di amministratore non è stata concessa, quindi non è cambiato nulla.
+err-path-too-broad = { $path } è troppo ampio per essere escluso.
 
 ## Impostazioni, a schede
 
@@ -370,6 +372,22 @@ look-no-art = Nessuna immagine trovata, quindi l'avviatore disegna le proprie.
 behaviour-minimize = Riduci a icona l'avviatore quando parte il gioco
 behaviour-close = Chiudi l'avviatore quando parte il gioco
 behaviour-close-help = Ha la precedenza sulla riduzione a icona.
+
+## Sicurezza di Windows
+
+defender-title = Sicurezza di Windows
+defender-why = ReCoF e questo avviatore non sono ancora firmati, quindi gli antivirus possono bloccarne o eliminarne i file per errore.
+defender-offer = L'avviatore può aggiungere questi elementi alle esclusioni di Sicurezza di Windows, così Microsoft Defender li lascia stare:
+defender-admin = Windows chiederà l'autorizzazione di amministratore.
+defender-add = Aggiungi esclusioni
+defender-not-now = Non ora
+defender-never = Non chiedere più
+defender-waiting = In attesa di Windows...
+defender-done = Ora Sicurezza di Windows lascia stare l'avviatore e ReCoF.
+defender-failed = Non è stato possibile aggiungere le esclusioni. I dettagli sono nei registri.
+defender-checking = Ricerca delle cartelle...
+defender-settings-help = Aggiunge di nuovo le cartelle dell'avviatore e di ReCoF alle esclusioni di Sicurezza di Windows, ad esempio se Microsoft Defender ha bloccato o eliminato un file.
+defender-settings-ask = Proponilo quando si apre l'avviatore
 
 ## Informazioni
 

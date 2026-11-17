@@ -96,15 +96,17 @@ pub fn installed_state_file(install_root: &Path) -> PathBuf {
 /// compares them. Used to refuse installing into the Steam folder and to
 /// make sure nothing writes outside where it should.
 pub fn is_inside(path: &Path, ancestor: &Path) -> bool {
-    let path = normalize_for_comparison(path);
-    let ancestor = normalize_for_comparison(ancestor);
+    let path = comparable(path);
+    let ancestor = comparable(ancestor);
     if path == ancestor {
         return true;
     }
     path.starts_with(&format!("{ancestor}\\"))
 }
 
-fn normalize_for_comparison(path: &Path) -> String {
+/// A path the way Windows compares it: without case, with one kind of
+/// separator and no trailing one. Also how remembered paths are stored.
+pub fn comparable(path: &Path) -> String {
     path.to_string_lossy()
         .replace('/', "\\")
         .trim_end_matches('\\')

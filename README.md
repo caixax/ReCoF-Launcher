@@ -25,12 +25,13 @@ This is a standalone MIT licensed project. It is not a replacement for `CoFLaunc
 - Imports your progress from the vanilla install, one way only.
 - Verifies and repairs, moves the installation, and uninstalls cleanly.
 - Starts ReCoF directly, or vanilla Cry of Fear through Steam.
+- Offers to add the launcher, its data folder and the ReCoF copy to the Windows Security (Microsoft Defender) exclusions, behind one administrator prompt, because neither ReCoF nor the launcher is signed yet and antivirus programs can wrongly block or delete their files. It asks at start and after an install when Defender's real-time protection is on, never excludes a Steam folder, a drive or a broad top level folder, and can add them again or stop asking from Settings, Behaviour.
 - Joins a server: Join a server, in the menu beside Play, starts ReCoF connected to the address you type (for servers such as [ReCoF Server](https://github.com/caixax/ReCoF-Server)).
 
 ## Rules it follows
 
 1. The Steam installation is read only. The launcher never writes, deletes or renames anything inside it.
-2. The launcher writes in exactly two places: the ReCoF copy folder you chose, and `%LOCALAPPDATA%\ReCoF Launcher`. The one documented exception is `shortcuts.vdf`, for adding ReCoF to Steam as a non Steam game, which is opt in, requires Steam to be closed, and backs the file up first.
+2. The launcher writes in exactly two places: the ReCoF copy folder you chose, and `%LOCALAPPDATA%\ReCoF Launcher`. The one documented exception is `shortcuts.vdf`, for adding ReCoF to Steam as a non Steam game, which is opt in, requires Steam to be closed, and backs the file up first. Outside files, the only system setting it changes is the Windows Security exclusions above, and only when you accept them.
 3. No retail game file is ever distributed or downloaded. The base game always comes from your own copy, and a release carries only ReCoF's rebuilt binaries (the rebuilt `CoFLaunchApp.exe` includes the images and sounds of the retail settings dialog).
 4. Every download is verified by signature and hash before it is used. If any check fails, nothing is installed.
 5. No operation may leave a half finished installation.

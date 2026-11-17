@@ -339,6 +339,8 @@ err-github = GitHub 返回了错误：{ $detail }
 err-rate-limited = GitHub 正在限制此连接的请求频率。请过几分钟再试。
 err-no-release = 这个通道上还没有发布任何版本。
 err-command-line-too-long = 命令行将有 { $length } 个字符，而游戏最多只接受 { $limit } 个。请缩短额外参数。
+err-declined = 未获得管理员权限，因此没有做任何更改。
+err-path-too-broad = { $path } 范围太大，不能排除。
 
 ## 设置，分页
 
@@ -369,6 +371,22 @@ look-no-art = 没有找到图片，所以由程序自己绘制。
 behaviour-minimize = 游戏启动时最小化本程序
 behaviour-close = 游戏启动时关闭本程序
 behaviour-close-help = 优先于最小化。
+
+## Windows 安全中心
+
+defender-title = Windows 安全中心
+defender-why = ReCoF 和本程序尚未签名，因此杀毒软件可能会误拦截或删除它们的文件。
+defender-offer = 本程序可以把以下项目加入 Windows 安全中心的排除项，这样 Microsoft Defender 就不会处理它们：
+defender-admin = Windows 会请求管理员权限。
+defender-add = 添加排除项
+defender-not-now = 以后再说
+defender-never = 不再询问
+defender-waiting = 正在等待 Windows...
+defender-done = Windows 安全中心将不再处理本程序和 ReCoF。
+defender-failed = 无法添加排除项。详细信息见日志。
+defender-checking = 正在查找文件夹...
+defender-settings-help = 重新把本程序和 ReCoF 的文件夹加入 Windows 安全中心的排除项，例如在 Microsoft Defender 拦截或删除了某个文件之后。
+defender-settings-ask = 本程序启动时提示此项
 
 ## 关于
 

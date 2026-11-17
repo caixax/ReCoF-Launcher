@@ -227,6 +227,9 @@ pub struct App {
     /// What an import would do, worked out before it is offered.
     pub import_plan: Option<recof_core::backup::ImportPlan>,
 
+    /// The Windows Security exclusions: what to offer and how it went.
+    pub defender: crate::screens::security::DefenderState,
+
     /// The console variables the game saved in the copy, and when they
     /// were read.
     saved_cvars: Option<(
@@ -321,6 +324,7 @@ impl App {
             backups: Vec::new(),
             backups_listed: false,
             import_plan: None,
+            defender: Default::default(),
             saved_cvars: None,
         };
 
@@ -347,6 +351,9 @@ impl App {
         // And the update check starts now, on its own thread, whatever
         // screen the launcher opens on.
         screens::updates::check_once(&mut app);
+        // Whether to offer the Windows Security exclusions, also asked
+        // on its own thread: finding out starts PowerShell.
+        screens::security::check(&mut app, true);
         app
     }
 
@@ -538,6 +545,9 @@ impl App {
                 self.notice = Some(Notice::good(
                     self.t_args("install-done", &[("version", version)]),
                 ));
+                // The new copy is a folder Defender has not been told
+                // about yet.
+                screens::security::check(self, true);
                 if self.shortcut_on_install {
                     self.shortcut_on_install = false;
                     if let Some(root) = self.settings.install_path.clone() {
@@ -597,6 +607,7 @@ impl App {
                 self.notice = Some(Notice::good(
                     self.t_args("move-done", &[("path", path.display().to_string())]),
                 ));
+                screens::security::check(self, true);
             }
             Event::Uninstalled => {
                 self.progress = None;
@@ -606,6 +617,7 @@ impl App {
                 self.screen = Screen::Detect;
                 self.detect_requested = false;
                 self.notice = Some(Notice::good(self.t("uninstall-done")));
+                screens::security::forget_folders(self);
             }
             Event::FetchProgress(progress) => {
                 self.progress = Some(self.fetch_progress(progress));
@@ -686,6 +698,14 @@ impl App {
             }
             Event::AddedToSteam => {
                 self.notice = Some(Notice::good(self.t("shortcut-steam-added")));
+            }
+            Event::DefenderChecked {
+                realtime_on,
+                folders,
+            } => screens::security::checked(self, realtime_on, folders),
+            Event::DefenderExcluded(folders) => screens::security::excluded(self, &folders),
+            Event::DefenderNotExcluded { declined } => {
+                screens::security::not_excluded(self, declined)
             }
             Event::Failed {
                 message_id,
@@ -876,6 +896,7 @@ impl eframe::App for App {
 
         screens::updates::popups(self, &ctx);
         screens::home::join_window(self, &ctx);
+        screens::security::popup(self, &ctx);
         self.draw_confirm(&ctx);
         self.watch_game();
     }

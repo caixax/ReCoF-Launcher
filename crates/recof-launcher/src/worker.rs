@@ -172,6 +172,16 @@ pub enum Job {
         entry: Box<ShortcutEntry>,
         stamp: String,
     },
+
+    /// Work out which folders to offer for the Windows Security
+    /// exclusions and, when `ask`, whether Defender's real-time
+    /// protection is on, which is what decides whether to offer at all.
+    DefenderCheck {
+        scope: Box<recof_core::defender::Scope>,
+        ask: bool,
+    },
+    /// Add the folders to the exclusions, behind one administrator prompt.
+    DefenderExclude { folders: Vec<PathBuf> },
 }
 
 /// Where a shortcut goes.
@@ -219,6 +229,19 @@ pub enum Event {
     AddedToSteam,
     /// Artwork arrived, or the release had none.
     ArtworkFetched(Box<recof_core::artwork::Fetched>),
+    /// The folders to offer for exclusion, and whether Defender's
+    /// real-time protection is on (false when it was not asked).
+    DefenderChecked {
+        realtime_on: bool,
+        folders: Vec<PathBuf>,
+    },
+    /// These folders are in the exclusions now.
+    DefenderExcluded(Vec<PathBuf>),
+    /// They are not: `declined` when the administrator prompt was
+    /// cancelled. The detail is already in the log.
+    DefenderNotExcluded {
+        declined: bool,
+    },
 
     /// A job failed. The message id is what the user sees; the detail goes
     /// to the log and the bug report.
@@ -356,7 +379,7 @@ impl Worker {
     pub fn drain(&mut self) -> Vec<Event> {
         let mut events = Vec::new();
         while let Ok(event) = self.events.try_recv() {
-            if !is_progress(&event) {
+            if !is_progress(&event) && !is_from_background(&event) {
                 self.busy = false;
             }
             events.push(event);
@@ -372,6 +395,17 @@ fn is_progress(event: &Event) -> bool {
             | Event::ApplyProgress { .. }
             | Event::CountProgress { .. }
             | Event::FetchProgress(_)
+    )
+}
+
+/// Events of jobs that only ever run through [`Worker::send_background`],
+/// which never marked the worker busy and so must not clear it either.
+fn is_from_background(event: &Event) -> bool {
+    matches!(
+        event,
+        Event::DefenderChecked { .. }
+            | Event::DefenderExcluded(_)
+            | Event::DefenderNotExcluded { .. }
     )
 }
 
@@ -701,7 +735,54 @@ fn run(job: Job, cancel: &Arc<AtomicBool>, emit: &dyn Fn(Event)) {
                 }
             },
         ),
+
+        Job::DefenderCheck { scope, ask } => {
+            let folders = defender_folders(*scope);
+            // PowerShell is only started when the answer matters.
+            let realtime_on = ask && !folders.is_empty() && recof_core::defender::realtime_on();
+            emit(Event::DefenderChecked {
+                realtime_on,
+                folders,
+            });
+        }
+
+        Job::DefenderExclude { folders } => {
+            emit(match recof_core::defender::add(&folders) {
+                Ok(()) => Event::DefenderExcluded(folders),
+                Err(error) => {
+                    let declined = matches!(
+                        error,
+                        Error::Platform(recof_platform::PlatformError::Declined)
+                    );
+                    if declined {
+                        log::info!("the administrator prompt for the exclusions was cancelled");
+                    } else {
+                        log::error!("the exclusions could not be added: {error}");
+                    }
+                    Event::DefenderNotExcluded { declined }
+                }
+            });
+        }
     }
+}
+
+/// The folders to offer for exclusion, kept clear of every Steam folder
+/// the registry knows about as well as the ones the caller named.
+fn defender_folders(mut scope: recof_core::defender::Scope) -> Vec<PathBuf> {
+    match recof_core::steam::steam_path() {
+        Ok(Some(steam)) => match recof_core::steam::libraries(&steam) {
+            Ok(layout) => scope
+                .keep_out
+                .extend(recof_core::defender::steam_folders(&layout)),
+            Err(error) => {
+                log::warn!("the Steam libraries could not be read: {error}");
+                scope.keep_out.push(steam);
+            }
+        },
+        Ok(None) => {}
+        Err(error) => log::warn!("the Steam folder could not be read: {error}"),
+    }
+    recof_core::defender::folders(&scope)
 }
 
 fn detect() -> Event {
