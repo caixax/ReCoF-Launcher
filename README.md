@@ -1,5 +1,7 @@
 # ReCoF Launcher
 
+[![Discord](https://img.shields.io/badge/Discord-join%20the%20server-5865F2?logo=discord&logoColor=white)](https://discord.gg/m63drEUJ4v)
+
 Installer, updater and launcher for [ReCoF](https://github.com/caixax/ReCoF), the improved recompilation of Cry of Fear.
 
 It finds your Steam copy of Cry of Fear, copies it to a folder you choose, applies ReCoF on top of the copy, keeps it updated from GitHub Releases with signature and hash checks, backs up your saves, and starts either build.
