@@ -38,6 +38,15 @@ pub const RECOF_REPO: &str = "caixax/ReCoF";
 /// Repository that publishes ReCoF Launcher releases.
 pub const LAUNCHER_REPO: &str = "caixax/ReCoF-Launcher";
 
+/// ReCoF's page on GitHub, linked from the main screen.
+pub const RECOF_GITHUB_URL: &str = "https://github.com/caixax/ReCoF";
+
+/// ReCoF's website, linked from the main screen.
+pub const WEBSITE_URL: &str = "https://recof.dev";
+
+/// The invite to ReCoF's Discord server, linked from the main screen.
+pub const DISCORD_URL: &str = "https://discord.gg/m63drEUJ4v";
+
 /// Version of this launcher, from Cargo.
 pub const LAUNCHER_VERSION: &str = env!("CARGO_PKG_VERSION");
 

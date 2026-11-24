@@ -6,6 +6,7 @@
 //! else is a click away rather than on this screen, because a launcher
 //! is read at a glance and then clicked.
 
+use recof_core::consts;
 use recof_core::launch::{self, CvarFile, CvarKind, LaunchProblem};
 use recof_platform::DisplayMode;
 
@@ -36,6 +37,49 @@ pub fn home(app: &mut App, ui: &mut egui::Ui) {
             main_column(app, ui, full);
         });
     });
+    links(app, ui, full);
+}
+
+/// ReCoF's pages, as icons at the top right: the repository, the
+/// website and the Discord server. Each one names itself on hover.
+fn links(app: &App, ui: &mut egui::Ui, full: egui::Rect) {
+    const SIDE: f32 = 38.0;
+    const GAP: f32 = 4.0;
+
+    let links = [
+        (Icon::GitHub, "home-link-github", consts::RECOF_GITHUB_URL),
+        (Icon::Globe, "home-link-website", consts::WEBSITE_URL),
+        (Icon::Discord, "home-link-discord", consts::DISCORD_URL),
+    ];
+    let mut right = full.right();
+    for (glyph, key, url) in links.into_iter().rev() {
+        let rect = egui::Rect::from_min_max(
+            egui::pos2(right - SIDE, full.top()),
+            egui::pos2(right, full.top() + SIDE),
+        );
+        right -= SIDE + GAP;
+
+        let response = ui
+            .interact(rect, ui.make_persistent_id(key), egui::Sense::click())
+            .on_hover_cursor(egui::CursorIcon::PointingHand)
+            .on_hover_text(app.t(key));
+        let painter = ui.painter();
+        if response.hovered() {
+            painter.rect_filled(rect, egui::CornerRadius::same(8), theme::SURFACE);
+        }
+        let colour = if response.hovered() {
+            theme::TEXT
+        } else {
+            theme::TEXT_DIM
+        };
+        glyph.paint(painter, rect.shrink(9.0), colour);
+
+        if response.clicked() {
+            if let Err(error) = recof_platform::open_in_shell(url) {
+                log::warn!("{url} could not be opened: {error}");
+            }
+        }
+    }
 }
 
 fn nothing_installed(app: &mut App, ui: &mut egui::Ui) {
