@@ -12,9 +12,11 @@ The file in the repository is `crates/recof-launcher/assets/artwork/hero.jpg`. I
 
 The permission covers Greez's work. The picture is built on imagery from Cry of Fear, which belongs to Team Psykskallar, and nothing here is a grant from them. If they ask for it to go, it goes: delete the file from `assets/artwork`, and the next build falls back to the look the launcher draws for itself, with no other change needed.
 
-## Font
+## Fonts
 
 The display face is Archivo Black by Omnibus Type, under the SIL Open Font License 1.1. The licence travels with it in `crates/recof-launcher/assets/ArchivoBlack-OFL.txt`.
+
+The icons are Font Awesome Free 6.7.2 by Fonticons, Inc. (https://fontawesome.com): its solid and brands fonts, `fa-solid-900.ttf` and `fa-brands-400.ttf`, unmodified, under the SIL Open Font License 1.1. The licence travels with them in `crates/recof-launcher/assets/FontAwesome-LICENSE.txt`. The GitHub and Discord marks are their owners' trademarks and only link to ReCoF's pages there.
 
 ## Everything else
 

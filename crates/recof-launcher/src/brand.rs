@@ -19,23 +19,36 @@ const DISPLAY_FONT: &[u8] = include_bytes!("../assets/ArchivoBlack-Regular.ttf")
 /// The family name the display font is registered under.
 pub const DISPLAY: &str = "display";
 
+/// Font Awesome Free 6.7.2's solid and brands fonts, unmodified, under the
+/// SIL Open Font License 1.1 in `assets/FontAwesome-LICENSE.txt`: the
+/// launcher's icons ([`crate::icon`]).
+const ICONS_SOLID: &[u8] = include_bytes!("../assets/fa-solid-900.ttf");
+const ICONS_BRANDS: &[u8] = include_bytes!("../assets/fa-brands-400.ttf");
+
 /// Side of the grain tile. Small enough to be cheap, large enough that
 /// the repeat is not a pattern the eye picks up.
 const GRAIN_SIZE: usize = 128;
 
-/// Registers the display font alongside the built in ones.
+/// Registers the display font and the icon fonts alongside the built in
+/// ones, each in a family of its own.
 ///
 /// Called after the fonts are otherwise set up, so the system font
 /// fallback still applies to body text.
 pub fn install_font(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
-    fonts.font_data.insert(
-        DISPLAY.to_owned(),
-        std::sync::Arc::new(egui::FontData::from_static(DISPLAY_FONT)),
-    );
-    fonts
-        .families
-        .insert(FontFamily::Name(DISPLAY.into()), vec![DISPLAY.to_owned()]);
+    for (name, data) in [
+        (DISPLAY, DISPLAY_FONT),
+        (crate::icon::SOLID, ICONS_SOLID),
+        (crate::icon::BRANDS, ICONS_BRANDS),
+    ] {
+        fonts.font_data.insert(
+            name.to_owned(),
+            std::sync::Arc::new(egui::FontData::from_static(data)),
+        );
+        fonts
+            .families
+            .insert(FontFamily::Name(name.into()), vec![name.to_owned()]);
+    }
     ctx.set_fonts(fonts);
 }
 
@@ -341,6 +354,17 @@ mod tests {
         let licence = include_str!("../assets/ArchivoBlack-OFL.txt");
         assert!(licence.contains("SIL OPEN FONT LICENSE"));
         assert!(licence.contains("Archivo Black"));
+    }
+
+    #[test]
+    fn the_icon_fonts_are_real_font_files_with_their_licence() {
+        for data in [ICONS_SOLID, ICONS_BRANDS] {
+            assert!(data.len() > 100_000, "{}", data.len());
+            assert_eq!(&data[..4], [0x00, 0x01, 0x00, 0x00]);
+        }
+        let licence = include_str!("../assets/FontAwesome-LICENSE.txt");
+        assert!(licence.contains("SIL OPEN FONT LICENSE"));
+        assert!(licence.contains("Reserved Font Name: \"Font Awesome\""));
     }
 
     #[test]
